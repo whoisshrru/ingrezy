@@ -36,15 +36,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
+          backgroundColor: AppTheme.warmWhite,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
-              const Icon(Icons.shield_outlined, color: AppTheme.primaryGreen),
+              const Icon(Icons.shield_outlined, color: AppTheme.spiceOrange),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   l10n.securityOtpTitle,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppTheme.cocoaBrown),
                 ),
               ),
             ],
@@ -61,9 +62,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.mintLight,
+                  color: AppTheme.creamBeigeLight,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.primaryGreen, width: 2),
+                  border: Border.all(color: AppTheme.cardBorder, width: 2),
                 ),
                 child: Text(
                   otp,
@@ -71,7 +72,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 8,
-                    color: AppTheme.primaryDark,
+                    color: AppTheme.cocoaBrown,
                   ),
                 ),
               ),
@@ -84,6 +85,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           actions: [
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.spiceOrange),
               onPressed: () => Navigator.pop(ctx),
               child: Text(l10n.close),
             ),
@@ -94,7 +96,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.otpPartnerNotAssigned),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.spiceOrange,
         ),
       );
     }
@@ -104,9 +106,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: Text(l10n.orderTrackingTitle),
+        backgroundColor: AppTheme.warmWhite,
+        title: Text(l10n.orderTrackingTitle, style: const TextStyle(color: AppTheme.cocoaBrown, fontWeight: FontWeight.w800)),
       ),
       body: Consumer<OrderProvider>(
         builder: (context, orderProv, child) {
@@ -137,7 +140,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                    border: Border.all(color: AppTheme.cardBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.cocoaBrown.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +163,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.textDark,
+                                  color: AppTheme.cocoaBrown,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -169,15 +179,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                         ],
                       ),
-                      const Divider(height: 24, color: Color(0xFFEEEEEE)),
+                      const Divider(height: 24, color: AppTheme.cardBorder),
 
                       // Delivery Partner & OTP Button
                       if (order.deliveryPartnerName != null) ...[
                         Row(
                           children: [
                             const CircleAvatar(
-                              backgroundColor: AppTheme.mintLight,
-                              child: Icon(Icons.delivery_dining, color: AppTheme.primaryGreen),
+                              backgroundColor: AppTheme.creamBeigeLight,
+                              child: Icon(Icons.delivery_dining, color: AppTheme.spiceOrange),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -186,7 +196,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 children: [
                                   Text(
                                     order.deliveryPartnerName!,
-                                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppTheme.cocoaBrown),
                                   ),
                                   Text(
                                     order.deliveryPartnerPhone ?? l10n.deliveryPartner,
@@ -203,14 +213,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       // Customer OTP Retrieval Action
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.mintLight,
-                          foregroundColor: AppTheme.primaryDark,
+                          backgroundColor: AppTheme.creamBeigeLight,
+                          foregroundColor: AppTheme.cocoaBrown,
                           elevation: 0,
                           minimumSize: const Size.fromHeight(44),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(color: AppTheme.cardBorder),
+                          ),
                         ),
                         onPressed: () => _showOtpDialog(context, order.id),
-                        icon: const Icon(Icons.pin, size: 18),
-                        label: Text(l10n.viewDeliveryOtp),
+                        icon: const Icon(Icons.pin, size: 18, color: AppTheme.spiceOrange),
+                        label: Text(l10n.viewDeliveryOtp, style: const TextStyle(fontWeight: FontWeight.w800)),
                       ),
                     ],
                   ),
@@ -223,7 +237,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                    border: Border.all(color: AppTheme.cardBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.cocoaBrown.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,7 +254,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
-                          color: AppTheme.textDark,
+                          color: AppTheme.cocoaBrown,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -241,7 +262,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: order.items.length,
-                        separatorBuilder: (_, __) => const Divider(height: 16, color: Color(0xFFF1F5F9)),
+                        separatorBuilder: (_, __) => const Divider(height: 16, color: AppTheme.cardBorder),
                         itemBuilder: (context, idx) {
                           final item = order.items[idx];
                           return Row(
@@ -250,18 +271,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               Expanded(
                                 child: Text(
                                   '${item.quantity}x ${ContentLocalizer.productName(item.productName, Localizations.localeOf(context).languageCode)}',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.cocoaBrown),
                                 ),
                               ),
                               Text(
                                 '₹${item.subtotal.toStringAsFixed(0)}',
-                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppTheme.cocoaBrown),
                               ),
                             ],
                           );
                         },
                       ),
-                      const Divider(height: 24, color: Color(0xFFEEEEEE)),
+                      const Divider(height: 24, color: AppTheme.cardBorder),
 
                       // Total Row
                       Row(
@@ -269,14 +290,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         children: [
                           Text(
                             l10n.grandTotal,
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppTheme.cocoaBrown),
                           ),
                           Text(
                             '₹${order.totalAmount.toStringAsFixed(0)}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.spiceOrange,
                             ),
                           ),
                         ],
@@ -293,14 +314,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFEEEEEE)),
+                      border: Border.all(color: AppTheme.cardBorder),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.cocoaBrown.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           l10n.deliveryLocation,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.cocoaBrown),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -318,4 +346,3 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 }
-

@@ -248,7 +248,7 @@ export async function matchIngredientToProduct(rawName: string): Promise<MatchRe
       OR: [
         { name: { equals: rawName.trim(), mode: "insensitive" } },
         { name: { contains: normalized, mode: "insensitive" } },
-        ...(stem ? [{ name: { contains: stem, mode: "insensitive" } }] : []),
+        ...(stem ? [{ name: { contains: stem, mode: "insensitive" as const } }] : []),
       ],
     },
     select: { id: true, name: true },

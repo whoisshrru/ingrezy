@@ -46,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.warmWhite,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -60,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textDark,
+                color: AppTheme.cocoaBrown,
               ),
             ),
             const SizedBox(height: 6),
@@ -72,7 +73,12 @@ class _HomeScreenState extends State<HomeScreen> {
             if (prodProv.stores.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Center(child: Text(l10n.noActiveStores)),
+                child: Center(
+                  child: Text(
+                    l10n.noActiveStores,
+                    style: const TextStyle(color: AppTheme.textMuted),
+                  ),
+                ),
               )
             else
               ListView.builder(
@@ -88,24 +94,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.mintLight : const Color(0xFFF1F5F9),
+                          color: isSelected ? AppTheme.creamBeigeLight : AppTheme.creamBeigeSoft,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.storefront_outlined,
-                          color: isSelected ? AppTheme.primaryGreen : AppTheme.textMuted,
+                          color: isSelected ? AppTheme.oliveGreen : AppTheme.textMuted,
                         ),
                       ),
                       title: Text(
                         s['name'] ?? l10n.ingrezyStore,
                         style: TextStyle(
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? AppTheme.primaryGreen : AppTheme.textDark,
+                          color: isSelected ? AppTheme.cocoaBrown : AppTheme.textDark,
                         ),
                       ),
-                      subtitle: Text('${s['address']}, ${s['city']}'),
+                      subtitle: Text(
+                        '${s['address']}, ${s['city']}',
+                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      ),
                       trailing: isSelected
-                          ? const Icon(Icons.check_circle, color: AppTheme.primaryGreen)
+                          ? const Icon(Icons.check_circle, color: AppTheme.oliveGreen)
                           : null,
                       onTap: () {
                         prodProv.selectStore(s['id']);
@@ -147,12 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
         const double gridPadding = 16.0 * 2;
         final double totalSpacing = (crossAxisCount - 1) * 12.0;
         final double colWidth = (screenWidth - gridPadding - totalSpacing) / crossAxisCount;
-        final double cardHeight = (colWidth - 20.0) * 0.75 + 106.0;
+        final double cardHeight = (colWidth - 20.0) * 0.75 + 108.0;
 
         return Scaffold(
+          backgroundColor: AppTheme.warmWhite,
           body: SafeArea(
             child: RefreshIndicator(
-              color: AppTheme.primaryGreen,
+              color: AppTheme.spiceOrange,
               onRefresh: () async {
                 await prodProv.fetchStores();
                 await prodProv.fetchProducts();
@@ -165,7 +175,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Quick Commerce Header Bar
                   SliverToBoxAdapter(
                     child: Container(
-                      color: Colors.white,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.warmWhite,
+                        border: Border(bottom: BorderSide(color: AppTheme.cardBorder, width: 1)),
+                      ),
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                       child: Row(
                         children: [
@@ -177,10 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                       Icon(
+                                      const Icon(
                                         Icons.flash_on,
                                         size: 16,
-                                        color: AppTheme.accentOrange,
+                                        color: AppTheme.spiceOrange,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
@@ -188,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w900,
-                                          color: AppTheme.accentOrange,
+                                          color: AppTheme.spiceOrange,
                                           letterSpacing: 0.5,
                                         ),
                                       ),
@@ -207,8 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.textDark,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.cocoaBrown,
                                     ),
                                   ),
                                 ],
@@ -225,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: Stack(
                               clipBehavior: Clip.none,
                               children: [
-                                const Icon(Icons.shopping_bag_outlined, color: AppTheme.textDark, size: 24),
+                                const Icon(Icons.shopping_bag_outlined, color: AppTheme.cocoaBrown, size: 24),
                                 if (cartProv.itemCount > 0)
                                   Positioned(
                                     right: -4,
@@ -233,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(3),
                                       decoration: const BoxDecoration(
-                                        color: AppTheme.accentOrange,
+                                        color: AppTheme.spiceOrange,
                                         shape: BoxShape.circle,
                                       ),
                                       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
@@ -265,12 +278,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           // User profile / initial avatar
                           CircleAvatar(
                             radius: 18,
-                            backgroundColor: AppTheme.mintLight,
+                            backgroundColor: AppTheme.creamBeigeLight,
                             child: Text(
                               authProv.user?.name.substring(0, 1).toUpperCase() ?? 'U',
                               style: const TextStyle(
-                                color: AppTheme.primaryGreen,
-                                fontWeight: FontWeight.bold,
+                                color: AppTheme.cocoaBrown,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
@@ -282,8 +295,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Sticky Search Bar & Filter Row
                   SliverToBoxAdapter(
                     child: Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      color: AppTheme.warmWhite,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                       child: Column(
                         children: [
                           // Search field
@@ -292,10 +305,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             onChanged: (val) => prodProv.setSearchQuery(val),
                             decoration: InputDecoration(
                               hintText: l10n.searchHint,
-                              prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
+                              prefixIcon: const Icon(Icons.search, color: AppTheme.cocoaBrownLight),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? IconButton(
-                                      icon: const Icon(Icons.clear, size: 18),
+                                      icon: const Icon(Icons.clear, size: 18, color: AppTheme.textMuted),
                                       onPressed: () {
                                         _searchController.clear();
                                         prodProv.setSearchQuery('');
@@ -309,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // Category horizontal chips
                           SizedBox(
-                            height: 36,
+                            height: 38,
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemCount: prodProv.categories.length,
@@ -321,12 +334,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return ChoiceChip(
                                   label: Text(displayLabel),
                                   selected: isSelected,
-                                  selectedColor: AppTheme.primaryGreen,
-                                  backgroundColor: const Color(0xFFF1F5F9),
+                                  selectedColor: AppTheme.oliveGreen,
+                                  backgroundColor: AppTheme.creamBeigeSoft,
+                                  side: BorderSide(
+                                    color: isSelected ? AppTheme.oliveGreen : AppTheme.cardBorder,
+                                    width: 1,
+                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                   labelStyle: TextStyle(
-                                    color: isSelected ? Colors.white : AppTheme.textDark,
+                                    color: isSelected ? Colors.white : AppTheme.cocoaBrown,
                                     fontSize: 12,
-                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                   ),
                                   onSelected: (val) {
                                     if (val) prodProv.setCategory(cat);
@@ -340,10 +358,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // Recipe Bundling Promo Banner
+                  // Recipe Bundling Promo Banner in Warm Cream Beige
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
                       child: InkWell(
                         onTap: () {
                           if (widget.onNavigateTab != null) {
@@ -355,24 +373,32 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF0E7A4A), Color(0xFF1B5E20)],
+                              colors: [AppTheme.creamBeigeLight, AppTheme.creamBeige],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.cardBorder, width: 1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.cocoaBrown.withOpacity(0.06),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
                           child: Row(
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: AppTheme.cocoaBrown.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
                                   Icons.menu_book_rounded,
-                                  color: Colors.white,
-                                  size: 28,
+                                  color: AppTheme.cocoaBrown,
+                                  size: 26,
                                 ),
                               ),
                               const SizedBox(width: 14),
@@ -383,26 +409,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       l10n.smartRecipes,
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: AppTheme.cocoaBrown,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.2,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       l10n.recipesSubtitle,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
+                                      style: TextStyle(
+                                        color: AppTheme.cocoaBrown.withOpacity(0.8),
                                         fontSize: 12,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.white70,
-                                size: 14,
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.spiceOrange,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: Colors.white,
+                                  size: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -438,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     )
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 80),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
@@ -463,12 +498,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryDark,
-                    borderRadius: BorderRadius.circular(14),
+                    color: AppTheme.cocoaBrownDark,
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
-                        blurRadius: 10,
+                        color: AppTheme.cocoaBrownDark.withOpacity(0.28),
+                        blurRadius: 14,
                         offset: const Offset(0, 4),
                       ),
                     ],
@@ -483,7 +518,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             '${cartProv.itemCount} ${l10n.inCart.toUpperCase()}',
                             style: const TextStyle(
-                              color: Color(0xFFBBF7D0),
+                              color: AppTheme.creamBeige,
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -493,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             '₹${cartProv.cart?.totalAmount.toStringAsFixed(0) ?? "0"}',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 17,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -511,10 +546,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryGreen,
+                            color: AppTheme.spiceOrange,
                             borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.spiceOrange.withOpacity(0.35),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Row(
                             children: [
@@ -526,8 +568,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
-                              SizedBox(width: 4),
-                              Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
                             ],
                           ),
                         ),

@@ -49,22 +49,23 @@ class _RecipesScreenState extends State<RecipesScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FBF8),
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
+        backgroundColor: AppTheme.warmWhite,
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.12),
+                color: AppTheme.creamBeigeLight,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.soup_kitchen_rounded, color: AppTheme.primaryGreen, size: 20),
+              child: const Icon(Icons.soup_kitchen_rounded, color: AppTheme.cocoaBrown, size: 20),
             ),
             const SizedBox(width: 10),
             Text(
               l10n.smartRecipes,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: AppTheme.cocoaBrown),
             ),
           ],
         ),
@@ -80,10 +81,10 @@ class _RecipesScreenState extends State<RecipesScreen> {
                   _searchController.clear();
                   prov.resetFilters();
                 },
-                icon: const Icon(Icons.refresh_rounded, size: 16, color: AppTheme.primaryGreen),
+                icon: const Icon(Icons.refresh_rounded, size: 16, color: AppTheme.spiceOrange),
                 label: Text(
                   l10n.retry,
-                  style: const TextStyle(color: AppTheme.primaryGreen, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.spiceOrange, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               );
             },
@@ -95,7 +96,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(Icons.shopping_bag_outlined),
+                    const Icon(Icons.shopping_bag_outlined, color: AppTheme.cocoaBrown),
                     if (cartProv.itemCount > 0)
                       Positioned(
                         right: -4,
@@ -103,7 +104,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: const BoxDecoration(
-                            color: AppTheme.accentOrange,
+                            color: AppTheme.spiceOrange,
                             shape: BoxShape.circle,
                           ),
                           constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
@@ -136,12 +137,12 @@ class _RecipesScreenState extends State<RecipesScreen> {
         builder: (context, recipeProv, child) {
           return RefreshIndicator(
             onRefresh: () => recipeProv.fetchRecipes(),
-            color: AppTheme.primaryGreen,
+            color: AppTheme.spiceOrange,
             child: Column(
               children: [
                 // Top Search & Filters Section
                 Container(
-                  color: Colors.white,
+                  color: AppTheme.warmWhite,
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,18 +151,18 @@ class _RecipesScreenState extends State<RecipesScreen> {
                       Container(
                         height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: AppTheme.cardBorder),
                         ),
                         child: TextField(
                           controller: _searchController,
                           onChanged: (val) => recipeProv.setSearchQuery(val),
-                          style: const TextStyle(fontSize: 14),
+                          style: const TextStyle(fontSize: 14, color: AppTheme.cocoaBrown),
                           decoration: InputDecoration(
                             hintText: l10n.searchRecipesHint,
                             hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                            prefixIcon: const Icon(Icons.search, size: 20, color: AppTheme.textMuted),
+                            prefixIcon: const Icon(Icons.search, size: 20, color: AppTheme.cocoaBrownLight),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(Icons.cancel, size: 18, color: AppTheme.textMuted),
@@ -196,17 +197,17 @@ class _RecipesScreenState extends State<RecipesScreen> {
                               label: Text(displayCuisine),
                               selected: isSelected,
                               showCheckmark: false,
-                              selectedColor: AppTheme.primaryGreen,
-                              backgroundColor: Colors.white,
+                              selectedColor: AppTheme.oliveGreen,
+                              backgroundColor: AppTheme.creamBeigeSoft,
                               labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : AppTheme.textDark,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected ? Colors.white : AppTheme.cocoaBrown,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                 fontSize: 12,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                                 side: BorderSide(
-                                  color: isSelected ? AppTheme.primaryGreen : const Color(0xFFE2E8F0),
+                                  color: isSelected ? AppTheme.oliveGreen : AppTheme.cardBorder,
                                 ),
                               ),
                               onSelected: (_) => recipeProv.setCuisineFilter(cuisine),
@@ -228,7 +229,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                           _buildDietaryChip(
                             label: l10n.dietaryVeg,
                             icon: Icons.eco_rounded,
-                            iconColor: const Color(0xFF16A34A),
+                            iconColor: AppTheme.oliveGreen,
                             isSelected: recipeProv.dietaryFilter == 'VEG',
                             onTap: () => recipeProv.setDietaryFilter('VEG'),
                           ),
@@ -236,7 +237,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                           _buildDietaryChip(
                             label: l10n.dietaryNonVeg,
                             icon: Icons.restaurant,
-                            iconColor: const Color(0xFFDC2626),
+                            iconColor: const Color(0xFFB91C1C),
                             isSelected: recipeProv.dietaryFilter == 'NON_VEG',
                             onTap: () => recipeProv.setDietaryFilter('NON_VEG'),
                           ),
@@ -256,23 +257,24 @@ class _RecipesScreenState extends State<RecipesScreen> {
                         '${recipeProv.recipes.length} ${recipeProv.recipes.length == 1 ? 'Recipe' : 'Recipes'} Available',
                         style: const TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textDark,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.cocoaBrown,
                         ),
                       ),
                       if (recipeProv.selectedCuisine != 'All')
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: AppTheme.mintLight,
+                            color: AppTheme.creamBeigeLight,
                             borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppTheme.cardBorder),
                           ),
                           child: Text(
                             recipeProv.selectedCuisine,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryDark,
+                              color: AppTheme.cocoaBrown,
                             ),
                           ),
                         ),
@@ -301,13 +303,14 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                         Container(
                                           padding: const EdgeInsets.all(18),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.mintLight,
+                                            color: AppTheme.creamBeigeLight,
                                             shape: BoxShape.circle,
+                                            border: Border.all(color: AppTheme.creamBeige, width: 2),
                                           ),
                                           child: const Icon(
                                             Icons.soup_kitchen_outlined,
                                             size: 44,
-                                            color: AppTheme.primaryGreen,
+                                            color: AppTheme.cocoaBrown,
                                           ),
                                         ),
                                         const SizedBox(height: 16),
@@ -316,7 +319,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                           style: const TextStyle(
                                             fontSize: 17,
                                             fontWeight: FontWeight.w800,
-                                            color: AppTheme.textDark,
+                                            color: AppTheme.cocoaBrown,
                                           ),
                                         ),
                                         const SizedBox(height: 6),
@@ -389,10 +392,10 @@ class _RecipesScreenState extends State<RecipesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.mintLight : Colors.white,
+          color: isSelected ? AppTheme.creamBeigeLight : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : const Color(0xFFE2E8F0),
+            color: isSelected ? AppTheme.oliveGreen : AppTheme.cardBorder,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -407,8 +410,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? AppTheme.primaryDark : AppTheme.textDark,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? AppTheme.cocoaBrown : AppTheme.textMuted,
               ),
             ),
           ],
@@ -481,13 +484,14 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AppTheme.mintLight,
+                    color: AppTheme.creamBeigeLight,
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.cardBorder),
                   ),
                   child: Icon(
                     _getCategoryIcon(category),
                     size: 16,
-                    color: AppTheme.primaryDark,
+                    color: AppTheme.cocoaBrown,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -496,7 +500,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.textDark,
+                    color: AppTheme.cocoaBrown,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ],
@@ -504,8 +509,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: AppTheme.creamBeigeSoft,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.cardBorder),
               ),
               child: Text(
                 '${recipes.length} ${recipes.length == 1 ? 'Dish' : 'Dishes'}',
@@ -571,12 +577,12 @@ class RecipeGridCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.warmWhite,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFEEEEEE)),
+          border: Border.all(color: AppTheme.cardBorder),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: AppTheme.cocoaBrown.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -597,7 +603,7 @@ class RecipeGridCard extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       height: double.infinity,
-                      color: const Color(0xFFF1F5F9),
+                      color: AppTheme.creamBeigeSoft,
                       child: recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
                           ? Image.network(
                               recipe.imageUrl!,
@@ -620,9 +626,9 @@ class RecipeGridCard extends StatelessWidget {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withOpacity(0.12),
+                              Colors.black.withOpacity(0.08),
                               Colors.transparent,
-                              Colors.black.withOpacity(0.6),
+                              Colors.black.withOpacity(0.65),
                             ],
                           ),
                         ),
@@ -641,7 +647,7 @@ class RecipeGridCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.65),
+                          color: AppTheme.cocoaBrownDark.withOpacity(0.8),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
@@ -668,7 +674,7 @@ class RecipeGridCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: AppTheme.warmWhite.withOpacity(0.92),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -676,7 +682,7 @@ class RecipeGridCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w800,
-                            color: AppTheme.textDark,
+                            color: AppTheme.cocoaBrown,
                           ),
                         ),
                       ),
@@ -686,7 +692,7 @@ class RecipeGridCard extends StatelessWidget {
               ),
             ),
 
-            // Recipe Card Content: Title, Servings, and Items count always visible below image
+            // Recipe Card Content: Title, Servings, and Items count
             Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
@@ -702,7 +708,7 @@ class RecipeGridCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.textDark,
+                        color: AppTheme.cocoaBrown,
                         height: 1.25,
                       ),
                     ),
@@ -720,21 +726,21 @@ class RecipeGridCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppTheme.textMuted,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.shopping_basket_outlined, size: 12, color: AppTheme.primaryGreen),
+                          const Icon(Icons.shopping_basket_outlined, size: 12, color: AppTheme.oliveGreen),
                           const SizedBox(width: 3),
                           Text(
                             '${recipe.ingredients.length} ${l10n.items}',
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.primaryGreen,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.oliveGreen,
                             ),
                           ),
                         ],
@@ -752,7 +758,7 @@ class RecipeGridCard extends StatelessWidget {
 
   Widget _buildPlaceholder({bool isLoading = false, String? recipeTitle}) {
     return Container(
-      color: const Color(0xFFF1F5F9),
+      color: AppTheme.creamBeigeSoft,
       child: Center(
         child: isLoading
             ? const SizedBox(
@@ -760,7 +766,7 @@ class RecipeGridCard extends StatelessWidget {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppTheme.primaryGreen,
+                  color: AppTheme.spiceOrange,
                 ),
               )
             : Column(
@@ -769,7 +775,7 @@ class RecipeGridCard extends StatelessWidget {
                   const Icon(
                     Icons.restaurant_menu_rounded,
                     size: 38,
-                    color: Color(0xFFCBD5E1),
+                    color: AppTheme.creamBeige,
                   ),
                   if (recipeTitle != null && recipeTitle.isNotEmpty) ...[
                     const SizedBox(height: 4),
@@ -783,7 +789,7 @@ class RecipeGridCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF94A3B8),
+                          color: AppTheme.textMuted,
                         ),
                       ),
                     ),

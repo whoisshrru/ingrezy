@@ -275,7 +275,7 @@ async function runE2EVerification() {
       address = await prisma.address.create({
         data: {
           userId: user!.id,
-          street: "123 Test Street",
+          addressLine1: "123 Test Street",
           city: "Pune",
           state: "Maharashtra",
           postalCode: "411001",
@@ -319,7 +319,7 @@ async function runE2EVerification() {
 
     assert(Boolean(dbOrder), "Database: order record saved successfully");
     assert(dbOrder!.items.length >= 2, `Database: order contains ${dbOrder!.items.length} recipe ingredient items`);
-    assert(dbOrder!.orderStatus === "PLACED" || dbOrder!.orderStatus === "PENDING", `Database: order initial status is PLACED/PENDING (got ${dbOrder!.orderStatus})`);
+    assert(dbOrder!.orderStatus === "PLACED", `Database: order initial status is PLACED (got ${dbOrder!.orderStatus})`);
 
     // Verify cart was emptied
     const emptiedCart = await prisma.cart.findUnique({

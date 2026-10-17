@@ -19,9 +19,10 @@ class ProductDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: Text(product.localizedName(context)),
+        backgroundColor: AppTheme.warmWhite,
+        title: Text(product.localizedName(context), style: const TextStyle(color: AppTheme.cocoaBrown, fontWeight: FontWeight.w800)),
         actions: [
           StatusBadge.fromDietaryType(
             product.dietaryType,
@@ -34,7 +35,7 @@ class ProductDetailScreen extends StatelessWidget {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(Icons.shopping_bag_outlined),
+                    const Icon(Icons.shopping_bag_outlined, color: AppTheme.cocoaBrown),
                     if (cartProv.itemCount > 0)
                       Positioned(
                         right: -4,
@@ -42,7 +43,7 @@ class ProductDetailScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: const BoxDecoration(
-                            color: AppTheme.accentOrange,
+                            color: AppTheme.spiceOrange,
                             shape: BoxShape.circle,
                           ),
                           constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
@@ -77,10 +78,10 @@ class ProductDetailScreen extends StatelessWidget {
           final effectiveStoreId = (cartProv.itemCount > 0 &&
                   cartProv.cart?.storeId != null &&
                   cartProv.cart!.storeId!.isNotEmpty)
-              ? cartProv.cart!.storeId!
-              : (prodProv.selectedStoreId ??
-                  (prodProv.stores.isNotEmpty ? prodProv.stores.first['id'] as String? : null) ??
-                  '');
+            ? cartProv.cart!.storeId!
+            : (prodProv.selectedStoreId ??
+                (prodProv.stores.isNotEmpty ? prodProv.stores.first['id'] as String? : null) ??
+                '');
 
           return Column(
             children: [
@@ -96,9 +97,9 @@ class ProductDetailScreen extends StatelessWidget {
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: AppTheme.creamBeigeSoft,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFF1F5F9)),
+                            border: Border.all(color: AppTheme.cardBorder),
                           ),
                           clipBehavior: Clip.antiAlias,
                           padding: const EdgeInsets.all(16),
@@ -109,11 +110,11 @@ class ProductDetailScreen extends StatelessWidget {
                                   height: double.infinity,
                                   fit: BoxFit.contain,
                                   errorBuilder: (_, __, ___) => const Center(
-                                    child: Icon(Icons.shopping_bag_outlined, size: 64, color: Color(0xFFCBD5E1)),
+                                    child: Icon(Icons.shopping_bag_outlined, size: 64, color: AppTheme.creamBeige),
                                   ),
                                 )
                               : const Center(
-                                  child: Icon(Icons.shopping_bag_outlined, size: 64, color: Color(0xFFCBD5E1)),
+                                  child: Icon(Icons.shopping_bag_outlined, size: 64, color: AppTheme.creamBeige),
                                 ),
                         ),
                       ),
@@ -133,7 +134,8 @@ class ProductDetailScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w800,
-                                    color: AppTheme.textDark,
+                                    color: AppTheme.cocoaBrown,
+                                    letterSpacing: -0.3,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -142,7 +144,7 @@ class ProductDetailScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: AppTheme.textMuted,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -153,13 +155,13 @@ class ProductDetailScreen extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.cocoaBrown,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 20),
-                      const Divider(color: Color(0xFFEEEEEE)),
+                      const Divider(color: AppTheme.cardBorder),
                       const SizedBox(height: 12),
 
                       // Description
@@ -167,8 +169,8 @@ class ProductDetailScreen extends StatelessWidget {
                         l10n.productOverview,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textDark,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.cocoaBrown,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -186,16 +188,16 @@ class ProductDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppTheme.mintLight,
+                          color: AppTheme.creamBeigeLight,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFC8E6C9)),
+                          border: Border.all(color: AppTheme.cardBorder),
                         ),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: const BoxDecoration(
-                                color: AppTheme.primaryGreen,
+                                color: AppTheme.spiceOrange,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -212,16 +214,16 @@ class ProductDetailScreen extends StatelessWidget {
                                   Text(
                                     l10n.deliveryPromiseHeader,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w800,
                                       fontSize: 13,
-                                      color: AppTheme.primaryGreen,
+                                      color: AppTheme.cocoaBrown,
                                     ),
                                   ),
                                   Text(
                                     l10n.deliveryPromiseDesc,
                                     style: const TextStyle(
                                       fontSize: 11,
-                                      color: AppTheme.textDark,
+                                      color: AppTheme.textMuted,
                                     ),
                                   ),
                                 ],
@@ -238,15 +240,9 @@ class ProductDetailScreen extends StatelessWidget {
               // Bottom Sticky Add / Quantity Bar
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+                decoration: const BoxDecoration(
+                  color: AppTheme.warmWhite,
+                  border: Border(top: BorderSide(color: AppTheme.cardBorder, width: 1)),
                 ),
                 child: SafeArea(
                   child: currentQty == 0
@@ -256,7 +252,7 @@ class ProductDetailScreen extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(l10n.selectStorePrompt),
-                                  backgroundColor: Colors.orange,
+                                  backgroundColor: AppTheme.spiceOrange,
                                 ),
                               );
                               return;
@@ -265,7 +261,7 @@ class ProductDetailScreen extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('${product.name} ${l10n.outOfStock}'),
-                                  backgroundColor: Colors.redAccent,
+                                  backgroundColor: const Color(0xFFC0392B),
                                 ),
                               );
                               return;
@@ -282,11 +278,14 @@ class ProductDetailScreen extends StatelessWidget {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    title: Text(l10n.switchStoreTitle),
-                                    content: Text(cartProv.errorMessage ?? l10n.switchStoreCartMsg),
+                                    backgroundColor: AppTheme.warmWhite,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: Text(l10n.switchStoreTitle, style: const TextStyle(color: AppTheme.cocoaBrown, fontWeight: FontWeight.bold)),
+                                    content: Text(cartProv.errorMessage ?? l10n.switchStoreCartMsg, style: const TextStyle(color: AppTheme.textMuted)),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.textMuted))),
                                       ElevatedButton(
+                                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.spiceOrange),
                                         onPressed: () => Navigator.pop(ctx, true),
                                         child: Text(l10n.clearAndSwitchStore),
                                       ),
@@ -305,13 +304,14 @@ class ProductDetailScreen extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(cartProv.errorMessage ?? l10n.somethingWentWrong),
-                                    backgroundColor: Colors.redAccent,
+                                    backgroundColor: const Color(0xFFC0392B),
                                   ),
                                 );
                               }
                             }
                           },
                           style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.spiceOrange,
                             minimumSize: const Size.fromHeight(50),
                           ),
                           child: Text(
@@ -335,8 +335,8 @@ class ProductDetailScreen extends StatelessWidget {
                                   '₹${(product.displayPrice * currentQty).toStringAsFixed(0)}',
                                   style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppTheme.textDark,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppTheme.cocoaBrown,
                                   ),
                                 ),
                               ],
@@ -346,7 +346,7 @@ class ProductDetailScreen extends StatelessWidget {
                                 Container(
                                   height: 44,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryGreen,
+                                    color: AppTheme.spiceOrange,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
@@ -414,7 +414,7 @@ class ProductDetailScreen extends StatelessWidget {
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryDark,
+                                    backgroundColor: AppTheme.cocoaBrown,
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
@@ -433,4 +433,3 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 }
-

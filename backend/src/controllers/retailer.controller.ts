@@ -19,7 +19,7 @@ function getParam(param: string | string[] | undefined): string {
  * Helper to find the dark store managed by the retailer
  */
 async function getManagedStore(userId: string) {
-  return prisma.store.findUnique({
+  let store = await prisma.store.findUnique({
     where: { managerId: userId },
     select: {
       id: true,
@@ -30,6 +30,71 @@ async function getManagedStore(userId: string) {
       isActive: true,
     },
   });
+
+  if (store) return store;
+
+  // Auto-assign an unmanaged active dark store so the retailer can immediately operate their portal
+  const unmanaged = await prisma.store.findFirst({
+    where: { managerId: null, isActive: true },
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      address: true,
+      postalCode: true,
+      isActive: true,
+    },
+  });
+
+  if (unmanaged) {
+    await prisma.store.update({
+      where: { id: unmanaged.id },
+      data: { managerId: userId },
+    }).catch(() => {});
+    return unmanaged;
+  }
+
+  // Create a dedicated dark store for this retailer if all existing stores have managers
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
+  const newStore = await prisma.store.create({
+    data: {
+      name: `${user?.name || "Retailer"} Central Dark Store`,
+      managerId: userId,
+      address: "Shop 12, Koregaon Park Road",
+      city: "Pune",
+      state: "Maharashtra",
+      postalCode: "411001",
+      latitude: 18.5362,
+      longitude: 73.8940,
+      serviceRadiusKm: 10.0,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      address: true,
+      postalCode: true,
+      isActive: true,
+    },
+  });
+
+  // Populate catalog inventory
+  const products = await prisma.product.findMany({ select: { id: true, basePrice: true } });
+  if (products.length > 0) {
+    await prisma.inventory.createMany({
+      data: products.map((p) => ({
+        storeId: newStore.id,
+        productId: p.id,
+        stockQuantity: 100,
+        price: p.basePrice,
+        isAvailable: true,
+      })),
+      skipDuplicates: true,
+    }).catch(() => {});
+  }
+
+  return newStore;
 }
 
 /**

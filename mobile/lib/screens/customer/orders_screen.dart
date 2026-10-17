@@ -31,9 +31,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Consumer2<OrderProvider, AuthProvider>(
       builder: (context, orderProv, authProv, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: AppTheme.warmWhite,
           appBar: AppBar(
-            title: Text(l10n.myOrders),
+            backgroundColor: AppTheme.warmWhite,
+            title: Text(l10n.myOrders, style: const TextStyle(color: AppTheme.cocoaBrown, fontWeight: FontWeight.w800)),
             actions: [
               const LanguageSelectorButton(),
               IconButton(
@@ -43,11 +44,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: Text(l10n.logOutConfirmTitle),
-                      content: Text(l10n.logOutConfirmMessage),
+                      backgroundColor: AppTheme.warmWhite,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: Text(l10n.logOutConfirmTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.cocoaBrown)),
+                      content: Text(l10n.logOutConfirmMessage, style: const TextStyle(color: AppTheme.textMuted)),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.textMuted)),
+                        ),
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC0392B)),
                           onPressed: () => Navigator.pop(ctx, true),
                           child: Text(l10n.logOut),
                         ),
@@ -63,7 +70,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
           body: RefreshIndicator(
             onRefresh: () => orderProv.fetchOrders(),
-            color: AppTheme.primaryGreen,
+            color: AppTheme.spiceOrange,
             child: orderProv.isLoading && orderProv.orders.isEmpty
                 ? LoadingView(message: l10n.loading)
                 : orderProv.errorMessage != null && orderProv.orders.isEmpty
@@ -101,7 +108,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                                    border: Border.all(color: AppTheme.cardBorder),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.cocoaBrown.withOpacity(0.04),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +128,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w800,
                                               fontSize: 15,
-                                              color: AppTheme.textDark,
+                                              color: AppTheme.cocoaBrown,
                                             ),
                                           ),
                                           StatusBadge.fromOrderStatus(
@@ -137,7 +151,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w900,
-                                              color: AppTheme.primaryGreen,
+                                              color: AppTheme.cocoaBrown,
                                             ),
                                           ),
                                           Row(
@@ -146,12 +160,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                                 l10n.trackOrder,
                                                 style: const TextStyle(
                                                   fontSize: 13,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: AppTheme.primaryGreen,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: AppTheme.spiceOrange,
                                                 ),
                                               ),
                                               const SizedBox(width: 4),
-                                              const Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.primaryGreen),
+                                              const Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.spiceOrange),
                                             ],
                                           ),
                                         ],
@@ -168,4 +182,3 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 }
-

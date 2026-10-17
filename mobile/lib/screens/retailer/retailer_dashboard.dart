@@ -30,11 +30,12 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.warmWhite,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,7 +45,11 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
               children: [
                 Text(
                   l10n.orderNumber(order.orderNumber),
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: AppTheme.cocoaBrown,
+                  ),
                 ),
                 StatusBadge.fromOrderStatus(
                   order.orderStatus,
@@ -55,13 +60,18 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
             const SizedBox(height: 14),
             Text(
               l10n.selectNextStep,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textMuted),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.cocoaBrownLight),
             ),
             const SizedBox(height: 12),
 
             if (order.orderStatus == OrderStatus.PLACED) ...[
               ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGreen),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.oliveGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 icon: const Icon(Icons.check_circle_outline),
                 label: Text(l10n.confirmOrderAction),
                 onPressed: () async {
@@ -71,7 +81,12 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.redAccent),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.redAccent,
+                  side: const BorderSide(color: Color(0xFFFCA5A5)),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 icon: const Icon(Icons.cancel_outlined),
                 label: Text(l10n.cancelAndRestock),
                 onPressed: () async {
@@ -81,7 +96,12 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
               ),
             ] else if (order.orderStatus == OrderStatus.CONFIRMED) ...[
               ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC2410C)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.spiceOrange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 icon: const Icon(Icons.inventory_2_outlined),
                 label: Text(l10n.startPackingGroceries),
                 onPressed: () async {
@@ -91,7 +111,12 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
               ),
             ] else if (order.orderStatus == OrderStatus.PREPARING) ...[
               ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7E22CE)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.oliveGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 icon: const Icon(Icons.local_shipping_outlined),
                 label: Text(l10n.markReadyAction),
                 onPressed: () async {
@@ -105,7 +130,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                 child: Text(
                   l10n.orderHandedOff,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppTheme.textMuted),
+                  style: const TextStyle(color: AppTheme.cocoaBrownLight),
                 ),
               ),
             ],
@@ -121,15 +146,22 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     return Consumer2<RetailerProvider, AuthProvider>(
       builder: (context, retProv, authProv, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: AppTheme.warmWhite,
           appBar: AppBar(
+            backgroundColor: AppTheme.warmWhite,
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.storeManagerPortal),
+                Text(
+                  l10n.storeManagerPortal,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.cocoaBrown,
+                  ),
+                ),
                 Text(
                   retProv.storeName,
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                  style: const TextStyle(fontSize: 12, color: AppTheme.cocoaBrownLight),
                 ),
               ],
             ),
@@ -137,7 +169,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
               const LanguageSelectorButton(),
               IconButton(
                 tooltip: l10n.stockManagement,
-                icon: const Icon(Icons.inventory_2_outlined, color: AppTheme.primaryGreen),
+                icon: const Icon(Icons.inventory_2_outlined, color: AppTheme.spiceOrange),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -147,14 +179,14 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
               ),
               IconButton(
                 tooltip: l10n.logOut,
-                icon: const Icon(Icons.logout, color: AppTheme.textMuted),
+                icon: const Icon(Icons.logout, color: AppTheme.cocoaBrownLight),
                 onPressed: () => authProv.logout(),
               ),
             ],
           ),
           body: RefreshIndicator(
             onRefresh: () => retProv.loadDashboard(),
-            color: AppTheme.primaryGreen,
+            color: AppTheme.spiceOrange,
             child: retProv.isLoading && retProv.store == null
                 ? LoadingView(message: l10n.loading)
                 : retProv.errorMessage != null && retProv.store == null
@@ -167,17 +199,29 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                         children: [
                           // Store Overview Banner
                           Container(
-                            color: Colors.white,
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.warmWhite,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppTheme.cardBorder),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.cocoaBrown.withValues(alpha: 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.mintLight,
+                                    color: AppTheme.creamBeigeLight,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(Icons.storefront, color: AppTheme.primaryGreen, size: 28),
+                                  child: const Icon(Icons.storefront, color: AppTheme.spiceOrange, size: 28),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
@@ -186,18 +230,25 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                                     children: [
                                       Text(
                                         retProv.storeName,
-                                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                          color: AppTheme.cocoaBrown,
+                                        ),
                                       ),
                                       Text(
                                         '${retProv.store?['address']}, ${retProv.store?['city']}',
-                                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                        style: const TextStyle(fontSize: 12, color: AppTheme.cocoaBrownLight),
                                       ),
                                     ],
                                   ),
                                 ),
                                 OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppTheme.spiceOrange,
+                                    side: const BorderSide(color: AppTheme.spiceOrange),
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   ),
                                   icon: const Icon(Icons.edit_note, size: 16),
                                   label: Text(l10n.stockManagement, style: const TextStyle(fontSize: 12)),
@@ -214,8 +265,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
 
                           // Filter Tabs (All, Placed, Preparing, Ready)
                           Container(
-                            color: Colors.white,
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
@@ -243,7 +293,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                                     description: '',
                                   )
                                 : ListView.separated(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                                     itemCount: retProv.filteredOrders.length,
                                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                                     itemBuilder: (context, idx) {
@@ -251,9 +301,16 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                                       return Container(
                                         padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: AppTheme.warmWhite,
                                           borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(color: const Color(0xFFEEEEEE)),
+                                          border: Border.all(color: AppTheme.cardBorder),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppTheme.cocoaBrown.withValues(alpha: 0.03),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
                                         ),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +320,11 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                                               children: [
                                                 Text(
                                                   order.orderNumber,
-                                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w800,
+                                                    fontSize: 15,
+                                                    color: AppTheme.cocoaBrown,
+                                                  ),
                                                 ),
                                                 StatusBadge.fromOrderStatus(
                                                   order.orderStatus,
@@ -277,22 +338,30 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                                               order.items.map((i) => '${i.quantity}x ${ContentLocalizer.productName(i.productName, Localizations.localeOf(context).languageCode)}').join(', '),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontSize: 13, color: AppTheme.textDark),
+                                              style: const TextStyle(fontSize: 13, color: AppTheme.cocoaBrown),
                                             ),
-                                            const Divider(height: 20, color: Color(0xFFF1F5F9)),
+                                            const Divider(height: 20, color: AppTheme.cardBorder),
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Text(
                                                   '₹${order.totalAmount.toStringAsFixed(0)} • ${order.paymentMethod}',
-                                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 13,
+                                                    color: AppTheme.cocoaBrown,
+                                                  ),
                                                 ),
                                                 ElevatedButton(
                                                   style: ElevatedButton.styleFrom(
+                                                    backgroundColor: AppTheme.spiceOrange,
+                                                    foregroundColor: Colors.white,
+                                                    elevation: 0,
                                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                                   ),
                                                   onPressed: () => _showOrderActionDialog(context, retProv, order),
-                                                  child: Text(l10n.updateStatus, style: const TextStyle(fontSize: 12)),
+                                                  child: Text(l10n.updateStatus, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                                                 ),
                                               ],
                                             ),
@@ -315,10 +384,11 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: AppTheme.primaryGreen,
-      backgroundColor: const Color(0xFFF1F5F9),
+      selectedColor: AppTheme.oliveGreen,
+      backgroundColor: AppTheme.warmWhite,
+      side: BorderSide(color: isSelected ? AppTheme.oliveGreen : AppTheme.cardBorder),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppTheme.textDark,
+        color: isSelected ? Colors.white : AppTheme.cocoaBrown,
         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
         fontSize: 12,
       ),

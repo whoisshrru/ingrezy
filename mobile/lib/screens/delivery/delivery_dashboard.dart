@@ -47,15 +47,16 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.warmWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.verified_user_outlined, color: AppTheme.primaryGreen),
+            const Icon(Icons.verified_user_outlined, color: AppTheme.spiceOrange),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 l10n.verifyOtpTitle,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppTheme.cocoaBrown),
               ),
             ),
           ],
@@ -65,7 +66,7 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
           children: [
             Text(
               l10n.verifyOtpSubtitle,
-              style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+              style: const TextStyle(fontSize: 13, color: AppTheme.cocoaBrownLight),
             ),
             const SizedBox(height: 18),
             TextField(
@@ -77,18 +78,41 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 6,
-                color: AppTheme.primaryDark,
+                color: AppTheme.cocoaBrown,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 counterText: '',
                 hintText: '• • • • • •',
+                hintStyle: const TextStyle(color: AppTheme.cocoaBrownLight),
+                filled: true,
+                fillColor: AppTheme.creamBeigeLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.cardBorder),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.cardBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.spiceOrange, width: 1.5),
+                ),
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.cocoaBrownLight)),
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.spiceOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () async {
               final otp = otpCtrl.text.trim();
               if (otp.length != 6) {
@@ -104,7 +128,7 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.otpVerifiedSuccess),
-                      backgroundColor: AppTheme.primaryGreen,
+                      backgroundColor: AppTheme.oliveGreen,
                     ),
                   );
                 } else {
@@ -131,7 +155,7 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success ? l10n.gpsLocationBroadcasted : l10n.somethingWentWrong),
-          backgroundColor: success ? AppTheme.primaryGreen : Colors.redAccent,
+          backgroundColor: success ? AppTheme.oliveGreen : Colors.redAccent,
         ),
       );
     }
@@ -143,26 +167,30 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
     return Consumer2<DeliveryProvider, AuthProvider>(
       builder: (context, delProv, authProv, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: AppTheme.warmWhite,
           appBar: AppBar(
-            title: Text(l10n.deliveryHub),
+            backgroundColor: AppTheme.warmWhite,
+            title: Text(
+              l10n.deliveryHub,
+              style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.cocoaBrown),
+            ),
             actions: [
               const LanguageSelectorButton(),
               IconButton(
                 tooltip: l10n.simulateGps,
-                icon: const Icon(Icons.my_location, color: AppTheme.primaryGreen),
+                icon: const Icon(Icons.my_location, color: AppTheme.spiceOrange),
                 onPressed: () => _simulateLocationUpdate(context, delProv),
               ),
               IconButton(
                 tooltip: l10n.logOut,
-                icon: const Icon(Icons.logout, color: AppTheme.textMuted),
+                icon: const Icon(Icons.logout, color: AppTheme.cocoaBrownLight),
                 onPressed: () => authProv.logout(),
               ),
             ],
           ),
           body: RefreshIndicator(
             onRefresh: () => delProv.loadDashboard(),
-            color: AppTheme.primaryGreen,
+            color: AppTheme.spiceOrange,
             child: delProv.isLoading && delProv.assignments.isEmpty
                 ? LoadingView(message: l10n.loading)
                 : delProv.errorMessage != null && delProv.assignments.isEmpty
@@ -180,16 +208,23 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppTheme.warmWhite,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFEEEEEE)),
+                                border: Border.all(color: AppTheme.cardBorder),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.cocoaBrown.withValues(alpha: 0.04),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
                                   CircleAvatar(
                                     radius: 24,
-                                    backgroundColor: AppTheme.mintLight,
-                                    child: const Icon(Icons.directions_bike, color: AppTheme.primaryGreen, size: 28),
+                                    backgroundColor: AppTheme.creamBeigeLight,
+                                    child: const Icon(Icons.directions_bike, color: AppTheme.spiceOrange, size: 28),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
@@ -198,11 +233,15 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                       children: [
                                         Text(
                                           authProv.user?.name ?? l10n.deliveryPartner,
-                                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 16,
+                                            color: AppTheme.cocoaBrown,
+                                          ),
                                         ),
                                         Text(
                                           authProv.user?.phoneNumber ?? '',
-                                          style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                          style: const TextStyle(fontSize: 12, color: AppTheme.cocoaBrownLight),
                                         ),
                                       ],
                                     ),
@@ -210,7 +249,7 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.mintLight,
+                                      color: AppTheme.oliveGreenSoft,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -218,7 +257,7 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: AppTheme.primaryGreen,
+                                        color: AppTheme.oliveGreen,
                                       ),
                                     ),
                                   ),
@@ -236,12 +275,12 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w800,
-                                    color: AppTheme.textDark,
+                                    color: AppTheme.cocoaBrown,
                                   ),
                                 ),
                                 Text(
                                   l10n.activeTasksCount(delProv.activeDeliveries.length),
-                                  style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                                  style: const TextStyle(fontSize: 13, color: AppTheme.cocoaBrownLight),
                                 ),
                               ],
                             ),
@@ -269,9 +308,16 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                   return Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: AppTheme.warmWhite,
                                       borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: const Color(0xFFEEEEEE)),
+                                      border: Border.all(color: AppTheme.cardBorder),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.cocoaBrown.withValues(alpha: 0.03),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,12 +327,16 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                           children: [
                                             Text(
                                               order?.orderNumber ?? 'Delivery #${delivery.id.substring(0, 8)}',
-                                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 15,
+                                                color: AppTheme.cocoaBrown,
+                                              ),
                                             ),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                               decoration: BoxDecoration(
-                                                color: AppTheme.mintLight,
+                                                color: AppTheme.creamBeigeLight,
                                                 borderRadius: BorderRadius.circular(6),
                                               ),
                                               child: Text(
@@ -294,7 +344,7 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.bold,
-                                                  color: AppTheme.primaryDark,
+                                                  color: AppTheme.cocoaBrown,
                                                 ),
                                               ),
                                             ),
@@ -306,12 +356,12 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                         Row(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            const Icon(Icons.storefront, size: 16, color: AppTheme.textMuted),
+                                            const Icon(Icons.storefront, size: 16, color: AppTheme.cocoaBrownLight),
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
                                                 l10n.pickupFromStore(order?.storeName ?? l10n.ingrezyStore),
-                                                style: const TextStyle(fontSize: 13, color: AppTheme.textDark),
+                                                style: const TextStyle(fontSize: 13, color: AppTheme.cocoaBrown),
                                               ),
                                             ),
                                           ],
@@ -321,46 +371,53 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                                           Row(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              const Icon(Icons.location_on, size: 16, color: AppTheme.primaryGreen),
+                                              const Icon(Icons.location_on, size: 16, color: AppTheme.spiceOrange),
                                               const SizedBox(width: 8),
                                               Expanded(
                                                 child: Text(
                                                   l10n.dropAtLocation(order!.address!.formattedAddress),
-                                                  style: const TextStyle(fontSize: 13, color: AppTheme.textDark),
+                                                  style: const TextStyle(fontSize: 13, color: AppTheme.cocoaBrown),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        const Divider(height: 20, color: Color(0xFFF1F5F9)),
+                                        const Divider(height: 20, color: AppTheme.cardBorder),
 
                                         // Action Stepper Buttons
                                         if (delivery.status == DeliveryStatus.ASSIGNED) ...[
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppTheme.spiceOrange,
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                               minimumSize: const Size.fromHeight(44),
                                             ),
                                             onPressed: () => delProv.acceptDelivery(delivery.id),
-                                            child: Text(l10n.acceptTaskAction),
+                                            child: Text(l10n.acceptTaskAction, style: const TextStyle(fontWeight: FontWeight.w700)),
                                           ),
                                         ] else if (delivery.status == DeliveryStatus.ACCEPTED) ...[
                                           ElevatedButton.icon(
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFFC2410C),
+                                              backgroundColor: AppTheme.oliveGreen,
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                               minimumSize: const Size.fromHeight(44),
                                             ),
                                             icon: const Icon(Icons.inventory),
-                                            label: Text(l10n.confirmStorePickupAction),
+                                            label: Text(l10n.confirmStorePickupAction, style: const TextStyle(fontWeight: FontWeight.w700)),
                                             onPressed: () => delProv.pickupDelivery(delivery.id),
                                           ),
                                         ] else if (delivery.status == DeliveryStatus.PICKED_UP ||
                                             delivery.status == DeliveryStatus.ARRIVED_AT_LOCATION) ...[
                                           ElevatedButton.icon(
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: AppTheme.primaryGreen,
+                                              backgroundColor: AppTheme.spiceOrange,
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                               minimumSize: const Size.fromHeight(44),
                                             ),
                                             icon: const Icon(Icons.pin),
-                                            label: Text(l10n.verifyOtpAction),
+                                            label: Text(l10n.verifyOtpAction, style: const TextStyle(fontWeight: FontWeight.w700)),
                                             onPressed: () => _showOtpVerificationDialog(context, delProv, delivery.id),
                                           ),
                                         ],

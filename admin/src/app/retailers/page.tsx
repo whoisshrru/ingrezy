@@ -313,9 +313,10 @@ export default function RetailersPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmModal({ isOpen: false, retailer: null, action: "suspend" })}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 border border-slate-700"
+                  style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-[#504932] hover:bg-[#E8DFC9] border-2 border-[#C8BEA7] cursor-pointer shadow-xs"
                 >
-                  Cancel
+                  <span style={{ color: "#504932" }} className="font-bold">Cancel</span>
                 </button>
                 <button
                   type="button"

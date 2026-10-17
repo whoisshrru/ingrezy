@@ -45,7 +45,7 @@ function validateAndEnforceTestDatabase(): string {
     try {
       const devParsed = new URL(process.env.DATABASE_URL);
       const devDbName = devParsed.pathname.replace(/^\//, "");
-      if (devDbName === "ingrezy_db" && (dbName === "ingrezy_db" || parsed.href === devParsed.href)) {
+      if (devDbName === "ingrezy_db" && ((dbName as string) === "ingrezy_db" || parsed.href === devParsed.href)) {
         console.error("\n❌ [PREFLIGHT FAILED] TEST_DATABASE_URL points to development database 'ingrezy_db'!\n");
         process.exit(1);
       }
@@ -415,7 +415,7 @@ async function bootstrapSuite() {
       const rawRecords = await (prisma as any).$queryRaw<Array<{ id: string }>>`
         SELECT "id" FROM "idempotency_records" WHERE "userId" = ${fixture.user.id}
       `;
-      tracker.idempotencyRecordIds.push(...rawRecords.map((r) => r.id));
+      tracker.idempotencyRecordIds.push(...rawRecords.map((r: { id: string }) => r.id));
     }
   );
 
@@ -452,7 +452,7 @@ async function bootstrapSuite() {
       const rawRecords = await (prisma as any).$queryRaw<Array<{ id: string }>>`
         SELECT "id" FROM "idempotency_records" WHERE "userId" = ${fixture.user.id}
       `;
-      tracker.idempotencyRecordIds.push(...rawRecords.map((r) => r.id));
+      tracker.idempotencyRecordIds.push(...rawRecords.map((r: { id: string }) => r.id));
 
       // Request 2: Reusing SAME key with DIFFERENT quantity (2 instead of 1)
       const mismatchRes = await apiRequest("/api/orders/checkout", {
@@ -686,7 +686,7 @@ async function bootstrapSuite() {
       const rawRecords = await (prisma as any).$queryRaw<Array<{ id: string }>>`
         SELECT "id" FROM "idempotency_records" WHERE "userId" = ${fixture.user.id}
       `;
-      tracker.idempotencyRecordIds.push(...rawRecords.map((r) => r.id));
+      tracker.idempotencyRecordIds.push(...rawRecords.map((r: { id: string }) => r.id));
 
       const replayRes = await apiRequest("/api/orders/checkout", {
         method: "POST",
@@ -736,7 +736,7 @@ async function bootstrapSuite() {
       const rawRecords = await (prisma as any).$queryRaw<Array<{ id: string }>>`
         SELECT "id" FROM "idempotency_records" WHERE "userId" = ${fixture.user.id}
       `;
-      tracker.idempotencyRecordIds.push(...rawRecords.map((r) => r.id));
+      tracker.idempotencyRecordIds.push(...rawRecords.map((r: { id: string }) => r.id));
 
       const replayRes = await apiRequest("/api/orders/checkout", {
         method: "POST",

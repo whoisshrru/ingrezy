@@ -37,12 +37,19 @@ class ProductCard extends StatelessWidget {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFEEEEEE)),
+              color: AppTheme.warmWhite,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.cardBorder, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.cocoaBrown.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
             child: Column(
@@ -58,7 +65,7 @@ class ProductCard extends StatelessWidget {
                         width: double.infinity,
                         height: double.infinity,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: AppTheme.creamBeigeSoft,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         clipBehavior: Clip.antiAlias,
@@ -81,22 +88,23 @@ class ProductCard extends StatelessWidget {
                         Positioned.fill(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.75),
+                              color: AppTheme.warmWhite.withOpacity(0.82),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             alignment: Alignment.center,
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade800,
+                                color: AppTheme.cocoaBrown,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
                                 l10n.outOfStock.toUpperCase(),
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppTheme.warmWhite,
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
@@ -105,7 +113,7 @@ class ProductCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 6),
 
                 // Name with compact uniform height for consistent card alignment
                 SizedBox(
@@ -116,8 +124,8 @@ class ProductCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textDark,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.cocoaBrown,
                       height: 1.2,
                     ),
                   ),
@@ -130,7 +138,7 @@ class ProductCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppTheme.textMuted,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     height: 1.2,
                   ),
                 ),
@@ -144,8 +152,8 @@ class ProductCard extends StatelessWidget {
                       '₹${product.displayPrice.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.textDark,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.cocoaBrown,
                       ),
                     ),
                     if (currentQty == 0)
@@ -157,7 +165,7 @@ class ProductCard extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(l10n.selectStoreTitle),
-                                  backgroundColor: Colors.orange,
+                                  backgroundColor: AppTheme.spiceOrange,
                                 ),
                               );
                               return;
@@ -166,7 +174,7 @@ class ProductCard extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('${product.localizedName(context)} - ${l10n.outOfStock}'),
-                                  backgroundColor: Colors.redAccent,
+                                  backgroundColor: const Color(0xFFC0392B),
                                 ),
                               );
                               return;
@@ -206,14 +214,15 @@ class ProductCard extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(cartProv.errorMessage ?? l10n.somethingWentWrong),
-                                    backgroundColor: Colors.redAccent,
+                                    backgroundColor: const Color(0xFFC0392B),
                                   ),
                                 );
                               }
                             }
                           },
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppTheme.primaryGreen, width: 1.5),
+                            side: const BorderSide(color: AppTheme.spiceOrange, width: 1.5),
+                            backgroundColor: AppTheme.spiceOrangeSoft,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -224,7 +233,7 @@ class ProductCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.spiceOrange,
                             ),
                           ),
                         ),
@@ -233,8 +242,15 @@ class ProductCard extends StatelessWidget {
                       Container(
                         height: 28,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryGreen,
+                          color: AppTheme.spiceOrange,
                           borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.spiceOrange.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -274,7 +290,7 @@ class ProductCard extends StatelessWidget {
                               '$currentQty',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w900,
                                 fontSize: 13,
                               ),
                             ),
@@ -322,21 +338,21 @@ class ProductCard extends StatelessWidget {
       child: Icon(
         Icons.shopping_bag_outlined,
         size: 38,
-        color: Color(0xFFCBD5E1),
+        color: AppTheme.creamBeige,
       ),
     );
   }
 
   Widget _buildDietaryDot(DietaryType type) {
-    Color color = Colors.green;
-    if (type == DietaryType.NON_VEG) color = Colors.red;
-    if (type == DietaryType.CONTAINS_EGG) color = Colors.amber.shade800;
+    Color color = AppTheme.oliveGreen;
+    if (type == DietaryType.NON_VEG) color = const Color(0xFFB91C1C);
+    if (type == DietaryType.CONTAINS_EGG) color = const Color(0xFFD97706);
 
     return Container(
       width: 14,
       height: 14,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.warmWhite,
         border: Border.all(color: color, width: 1.5),
         borderRadius: BorderRadius.circular(4),
       ),

@@ -29,18 +29,34 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.updateSellingPrice),
+        backgroundColor: AppTheme.warmWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          l10n.updateSellingPrice,
+          style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.cocoaBrown),
+        ),
         content: TextField(
           controller: priceCtrl,
           keyboardType: TextInputType.number,
+          style: const TextStyle(color: AppTheme.cocoaBrown, fontWeight: FontWeight.w700),
           decoration: InputDecoration(
             labelText: l10n.storeSellingPrice,
+            labelStyle: const TextStyle(color: AppTheme.cocoaBrownLight),
             prefixText: '₹ ',
+            prefixStyle: const TextStyle(color: AppTheme.spiceOrange, fontWeight: FontWeight.bold),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.cocoaBrownLight)),
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.spiceOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () async {
               final newPrice = double.tryParse(priceCtrl.text);
               if (newPrice != null && newPrice >= 0) {
@@ -67,24 +83,45 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
         }).toList();
 
         return Scaffold(
+          backgroundColor: AppTheme.warmWhite,
           appBar: AppBar(
-            title: Text(l10n.storeInventoryTitle),
+            backgroundColor: AppTheme.warmWhite,
+            title: Text(
+              l10n.storeInventoryTitle,
+              style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.cocoaBrown),
+            ),
           ),
           body: Column(
             children: [
               // Search input
               Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
+                color: AppTheme.warmWhite,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: TextField(
                   controller: _searchCtrl,
                   onChanged: (val) => setState(() => _searchFilter = val),
+                  style: const TextStyle(color: AppTheme.cocoaBrown),
                   decoration: InputDecoration(
                     hintText: l10n.searchInventoryHint,
-                    prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
+                    hintStyle: const TextStyle(color: AppTheme.cocoaBrownLight),
+                    prefixIcon: const Icon(Icons.search, color: AppTheme.cocoaBrownLight),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.cardBorder),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.cardBorder),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.spiceOrange, width: 1.5),
+                    ),
                     suffixIcon: _searchFilter.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
+                            icon: const Icon(Icons.clear, size: 18, color: AppTheme.cocoaBrownLight),
                             onPressed: () {
                               _searchCtrl.clear();
                               setState(() => _searchFilter = '');
@@ -117,11 +154,18 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                               return Container(
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppTheme.warmWhite,
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
-                                    color: inStock ? const Color(0xFFEEEEEE) : Colors.red.shade100,
+                                    color: inStock ? AppTheme.cardBorder : Colors.red.shade200,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.cocoaBrown.withValues(alpha: 0.03),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   children: [
@@ -134,13 +178,13 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 15,
-                                              color: AppTheme.textDark,
+                                              color: AppTheme.cocoaBrown,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
                                             '${getLocalizedCategory(item.category, l10n)} • ${item.localizedUnit(context)}',
-                                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                            style: const TextStyle(fontSize: 12, color: AppTheme.cocoaBrownLight),
                                           ),
                                           const SizedBox(height: 6),
                                           GestureDetector(
@@ -157,11 +201,11 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.w800,
                                                     fontSize: 14,
-                                                    color: AppTheme.primaryGreen,
+                                                    color: AppTheme.spiceOrange,
                                                   ),
                                                 ),
                                                 const SizedBox(width: 4),
-                                                const Icon(Icons.edit, size: 13, color: AppTheme.primaryGreen),
+                                                const Icon(Icons.edit, size: 13, color: AppTheme.spiceOrange),
                                               ],
                                             ),
                                           ),
@@ -176,7 +220,7 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                                         Row(
                                           children: [
                                             IconButton(
-                                              icon: const Icon(Icons.remove_circle_outline, color: AppTheme.textMuted),
+                                              icon: const Icon(Icons.remove_circle_outline, color: AppTheme.cocoaBrownLight),
                                               onPressed: (item.stockQuantity ?? 0) > 0
                                                   ? () => retProv.updateStock(
                                                         productId: item.id,
@@ -187,7 +231,7 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFF1F5F9),
+                                                color: AppTheme.creamBeigeLight,
                                                 borderRadius: BorderRadius.circular(6),
                                               ),
                                               child: Text(
@@ -195,12 +239,12 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.w800,
                                                   fontSize: 15,
-                                                  color: AppTheme.textDark,
+                                                  color: AppTheme.cocoaBrown,
                                                 ),
                                               ),
                                             ),
                                             IconButton(
-                                              icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryGreen),
+                                              icon: const Icon(Icons.add_circle_outline, color: AppTheme.spiceOrange),
                                               onPressed: () => retProv.updateStock(
                                                 productId: item.id,
                                                 stockQuantity: (item.stockQuantity ?? 0) + 1,
@@ -217,14 +261,14 @@ class _RetailerInventoryScreenState extends State<RetailerInventoryScreen> {
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
-                                                color: (item.isAvailable ?? true) ? AppTheme.primaryGreen : Colors.red,
+                                                color: (item.isAvailable ?? true) ? AppTheme.oliveGreen : Colors.red,
                                               ),
                                             ),
                                             Transform.scale(
                                               scale: 0.7,
                                               child: Switch(
                                                 value: item.isAvailable ?? true,
-                                                activeColor: AppTheme.primaryGreen,
+                                                activeColor: AppTheme.oliveGreen,
                                                 onChanged: (val) {
                                                   retProv.updateStock(productId: item.id, isAvailable: val);
                                                 },

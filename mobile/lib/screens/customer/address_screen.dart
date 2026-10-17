@@ -56,6 +56,7 @@ class _AddressScreenState extends State<AddressScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppTheme.warmWhite,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -75,7 +76,7 @@ class _AddressScreenState extends State<AddressScreen> {
               children: [
                 Text(
                   l10n.addNewAddress,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.cocoaBrown),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -117,6 +118,7 @@ class _AddressScreenState extends State<AddressScreen> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.spiceOrange),
                   onPressed: () async {
                     if (!formKey.currentState!.validate()) return;
                     Navigator.pop(ctx);
@@ -133,7 +135,7 @@ class _AddressScreenState extends State<AddressScreen> {
                       _loadAddresses();
                     } else if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(res.message), backgroundColor: Colors.redAccent),
+                        SnackBar(content: Text(res.message), backgroundColor: const Color(0xFFC0392B)),
                       );
                     }
                   },
@@ -151,11 +153,13 @@ class _AddressScreenState extends State<AddressScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: Text(l10n.savedAddresses),
+        backgroundColor: AppTheme.warmWhite,
+        title: Text(l10n.savedAddresses, style: const TextStyle(color: AppTheme.cocoaBrown, fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppTheme.primaryGreen),
+            icon: const Icon(Icons.add, color: AppTheme.spiceOrange),
             onPressed: _showAddAddressDialog,
           ),
         ],
@@ -196,19 +200,29 @@ class _AddressScreenState extends State<AddressScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: addr.isDefault ? AppTheme.primaryGreen : const Color(0xFFEEEEEE),
+                                color: addr.isDefault ? AppTheme.spiceOrange : AppTheme.cardBorder,
                                 width: addr.isDefault ? 1.5 : 1.0,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.cocoaBrown.withOpacity(0.04),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(10),
-                                  decoration: const BoxDecoration(
-                                    color: AppTheme.mintLight,
+                                  decoration: BoxDecoration(
+                                    color: addr.isDefault ? AppTheme.spiceOrangeSoft : AppTheme.creamBeigeSoft,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.location_on, color: AppTheme.primaryGreen),
+                                  child: Icon(
+                                    Icons.location_on,
+                                    color: addr.isDefault ? AppTheme.spiceOrange : AppTheme.cocoaBrown,
+                                  ),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
@@ -222,7 +236,7 @@ class _AddressScreenState extends State<AddressScreen> {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w800,
                                               fontSize: 15,
-                                              color: AppTheme.textDark,
+                                              color: AppTheme.cocoaBrown,
                                             ),
                                           ),
                                           if (addr.isDefault) ...[
@@ -230,7 +244,7 @@ class _AddressScreenState extends State<AddressScreen> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: AppTheme.mintLight,
+                                                color: AppTheme.spiceOrangeSoft,
                                                 borderRadius: BorderRadius.circular(4),
                                               ),
                                               child: Text(
@@ -238,7 +252,7 @@ class _AddressScreenState extends State<AddressScreen> {
                                                 style: const TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.bold,
-                                                  color: AppTheme.primaryGreen,
+                                                  color: AppTheme.spiceOrange,
                                                 ),
                                               ),
                                             ),
@@ -263,13 +277,12 @@ class _AddressScreenState extends State<AddressScreen> {
                       },
                     ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppTheme.primaryGreen,
+        backgroundColor: AppTheme.spiceOrange,
         foregroundColor: Colors.white,
         onPressed: _showAddAddressDialog,
         icon: const Icon(Icons.add_location_alt_outlined),
-        label: Text(l10n.addNewAddress),
+        label: Text(l10n.addNewAddress, style: const TextStyle(fontWeight: FontWeight.w800)),
       ),
     );
   }
 }
-

@@ -71,19 +71,19 @@ export default function DashboardPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "DELIVERED":
-        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+        return "bg-[#6A6332]/15 text-[#6A6332] border-[#6A6332]/30 font-bold";
       case "PLACED":
-        return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+        return "bg-[#B34E22]/15 text-[#B34E22] border-[#B34E22]/30 font-bold";
       case "CONFIRMED":
       case "PREPARING":
-        return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+        return "bg-[#EBD3AA]/60 text-[#504932] border-[#E8E2D5] font-bold";
       case "READY_FOR_PICKUP":
       case "OUT_FOR_DELIVERY":
-        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+        return "bg-[#B34E22]/15 text-[#B34E22] border-[#B34E22]/30 font-bold";
       case "CANCELLED":
-        return "bg-red-500/10 text-red-400 border-red-500/20";
+        return "bg-red-50 text-red-600 border-red-200 font-bold";
       default:
-        return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+        return "bg-[#FAF6ED] text-[#7A7056] border-[#E8E2D5]";
     }
   };
 
@@ -196,32 +196,43 @@ export default function DashboardPage() {
 
         {/* Secondary Metric Badges */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
-            <Users className="w-4 h-4 text-emerald-400" />
+          <div className="bg-white border border-[#E8E2D5] rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:border-[#B34E22]/30 transition-all">
+            <div className="w-10 h-10 rounded-xl bg-[#6A6332]/15 text-[#6A6332] flex items-center justify-center font-bold shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Customers</p>
-              <p className="text-sm font-bold text-white">{data?.kpis.totalCustomers ?? 0}</p>
+              <p className="text-[11px] text-[#7A7056] uppercase font-bold tracking-wider">Customers</p>
+              <p className="text-xl font-black text-[#504932]">{data?.kpis.totalCustomers ?? 0}</p>
             </div>
           </div>
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
-            <Store className="w-4 h-4 text-blue-400" />
+
+          <div className="bg-white border border-[#E8E2D5] rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:border-[#B34E22]/30 transition-all">
+            <div className="w-10 h-10 rounded-xl bg-[#B34E22]/15 text-[#B34E22] flex items-center justify-center font-bold shrink-0">
+              <Store className="w-5 h-5" />
+            </div>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Retailers</p>
-              <p className="text-sm font-bold text-white">{data?.kpis.totalRetailers ?? 0}</p>
+              <p className="text-[11px] text-[#7A7056] uppercase font-bold tracking-wider">Retailers</p>
+              <p className="text-xl font-black text-[#504932]">{data?.kpis.totalRetailers ?? 0}</p>
             </div>
           </div>
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
-            <Bike className="w-4 h-4 text-purple-400" />
+
+          <div className="bg-white border border-[#E8E2D5] rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:border-[#B34E22]/30 transition-all">
+            <div className="w-10 h-10 rounded-xl bg-[#504932]/10 text-[#504932] flex items-center justify-center font-bold shrink-0">
+              <Bike className="w-5 h-5" />
+            </div>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Riders</p>
-              <p className="text-sm font-bold text-white">{data?.kpis.totalDeliveryPartners ?? 0}</p>
+              <p className="text-[11px] text-[#7A7056] uppercase font-bold tracking-wider">Riders</p>
+              <p className="text-xl font-black text-[#504932]">{data?.kpis.totalDeliveryPartners ?? 0}</p>
             </div>
           </div>
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
-            <Package className="w-4 h-4 text-amber-400" />
+
+          <div className="bg-white border border-[#E8E2D5] rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:border-[#B34E22]/30 transition-all">
+            <div className="w-10 h-10 rounded-xl bg-[#EBD3AA] text-[#504932] flex items-center justify-center font-bold shrink-0">
+              <Package className="w-5 h-5 text-[#B34E22]" />
+            </div>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Catalog Items</p>
-              <p className="text-sm font-bold text-white">
+              <p className="text-[11px] text-[#7A7056] uppercase font-bold tracking-wider">Catalog Items</p>
+              <p className="text-base font-black text-[#504932]">
                 {data?.kpis.totalProducts ?? 0} prod / {data?.kpis.totalRecipes ?? 0} recip
               </p>
             </div>
@@ -229,15 +240,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Orders Section */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div className="bg-white border border-[#E8E2D5] rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[#E8E2D5] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-sm font-bold text-white">Recent Customer Orders</h3>
+              <Clock className="w-4 h-4 text-[#B34E22]" />
+              <h3 className="text-sm font-bold text-[#504932]">Recent Customer Orders</h3>
             </div>
             <Link
               href="/orders"
-              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
+              className="text-xs font-semibold text-[#B34E22] hover:text-[#96401B] flex items-center gap-1 transition-colors"
             >
               <span>View All Orders</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -246,7 +257,7 @@ export default function DashboardPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800 font-bold">
+              <thead className="bg-[#FAF6ED] text-[#7A7056] uppercase tracking-wider text-[10px] border-b border-[#E8E2D5] font-bold">
                 <tr>
                   <th className="py-3 px-4">Order #</th>
                   <th className="py-3 px-4">Customer</th>
@@ -257,32 +268,32 @@ export default function DashboardPage() {
                   <th className="py-3 px-4">Placed At</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
+              <tbody className="divide-y divide-[#F0EAE1] text-[#504932]">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <td colSpan={7} className="py-8 text-center text-[#7A7056]">
                       Loading orders...
                     </td>
                   </tr>
                 ) : data?.recentOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <td colSpan={7} className="py-8 text-center text-[#7A7056]">
                       No orders placed yet.
                     </td>
                   </tr>
                 ) : (
                   data?.recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-emerald-400">{order.orderNumber}</td>
-                      <td className="py-3 px-4 font-medium text-white">
+                    <tr key={order.id} className="hover:bg-[#FAF6ED] transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold text-[#B34E22]">{order.orderNumber}</td>
+                      <td className="py-3 px-4 font-medium text-[#504932]">
                         <div>{order.customerName}</div>
-                        <div className="text-[10px] text-slate-400">{order.customerPhone}</div>
+                        <div className="text-[10px] text-[#7A7056]">{order.customerPhone}</div>
                       </td>
-                      <td className="py-3 px-4 text-slate-300">{order.storeName}</td>
-                      <td className="py-3 px-4 font-bold text-white">₹{order.totalAmount}</td>
+                      <td className="py-3 px-4 text-[#504932] font-medium">{order.storeName}</td>
+                      <td className="py-3 px-4 font-bold text-[#504932]">₹{order.totalAmount}</td>
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(
                             order.orderStatus
                           )}`}
                         >
@@ -290,11 +301,11 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-[11px] font-medium text-slate-300">
+                        <span className="text-[11px] font-medium text-[#7A7056]">
                           {order.deliveryStatus || "PENDING"}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-slate-400">
+                      <td className="py-3 px-4 text-[#7A7056]">
                         {new Date(order.createdAt).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",

@@ -65,7 +65,7 @@ class _CustomerMainNavState extends State<CustomerMainNav> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: AppTheme.accentOrange,
+                        color: AppTheme.spiceOrange,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
@@ -93,7 +93,7 @@ class _CustomerMainNavState extends State<CustomerMainNav> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: AppTheme.accentOrange,
+                        color: AppTheme.spiceOrange,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),

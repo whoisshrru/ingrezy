@@ -62,7 +62,6 @@ String getLocalizedCategory(String category, AppLocalizations l10n) {
   }
 }
 
-
 class LoadingView extends StatelessWidget {
   final String? message;
   const LoadingView({super.key, this.message});
@@ -74,7 +73,7 @@ class LoadingView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const CircularProgressIndicator(
-            color: AppTheme.primaryGreen,
+            color: AppTheme.spiceOrange,
             strokeWidth: 3,
           ),
           if (message != null) ...[
@@ -84,7 +83,7 @@ class LoadingView extends StatelessWidget {
               style: const TextStyle(
                 color: AppTheme.textMuted,
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -118,14 +117,14 @@ class ErrorStateView extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
+              decoration: const BoxDecoration(
+                color: AppTheme.spiceOrangeSoft,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.wifi_off_rounded,
-                color: Colors.redAccent,
-                size: 40,
+                color: AppTheme.spiceOrange,
+                size: 38,
               ),
             ),
             const SizedBox(height: 16),
@@ -133,8 +132,8 @@ class ErrorStateView extends StatelessWidget {
               title ?? 'Oops! Something went wrong',
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.cocoaBrown,
               ),
               textAlign: TextAlign.center,
             ),
@@ -187,13 +186,14 @@ class EmptyStateView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.mintLight,
+                color: AppTheme.creamBeigeLight,
                 shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.creamBeige, width: 2),
               ),
               child: Icon(
                 icon,
-                color: AppTheme.primaryGreen,
-                size: 44,
+                color: AppTheme.cocoaBrown,
+                size: 42,
               ),
             ),
             const SizedBox(height: 18),
@@ -201,8 +201,8 @@ class EmptyStateView extends StatelessWidget {
               title,
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.cocoaBrown,
               ),
               textAlign: TextAlign.center,
             ),
@@ -248,50 +248,50 @@ class StatusBadge extends StatelessWidget {
       case OrderStatus.PLACED:
         return StatusBadge(
           text: label ?? 'Order Placed',
-          backgroundColor: const Color(0xFFE0F2FE),
-          textColor: const Color(0xFF0369A1),
+          backgroundColor: const Color(0xFFF6EEDC),
+          textColor: const Color(0xFF6B4E1B),
           icon: Icons.receipt_long_outlined,
         );
       case OrderStatus.CONFIRMED:
         return StatusBadge(
           text: label ?? 'Confirmed',
-          backgroundColor: const Color(0xFFE8F5E9),
-          textColor: const Color(0xFF1B5E20),
+          backgroundColor: const Color(0xFFEBE9D6),
+          textColor: const Color(0xFF595328),
           icon: Icons.check_circle_outline,
         );
       case OrderStatus.PREPARING:
         return StatusBadge(
           text: label ?? 'Packing',
-          backgroundColor: const Color(0xFFFFF7ED),
-          textColor: const Color(0xFFC2410C),
+          backgroundColor: const Color(0xFFFDE8DD),
+          textColor: const Color(0xFF9E421B),
           icon: Icons.inventory_2_outlined,
         );
       case OrderStatus.READY_FOR_PICKUP:
         return StatusBadge(
           text: label ?? 'Ready for Pickup',
-          backgroundColor: const Color(0xFFF3E8FF),
-          textColor: const Color(0xFF7E22CE),
+          backgroundColor: const Color(0xFFFBF1D5),
+          textColor: const Color(0xFF8A5A1B),
           icon: Icons.local_shipping_outlined,
         );
       case OrderStatus.OUT_FOR_DELIVERY:
         return StatusBadge(
           text: label ?? 'Out for Delivery',
-          backgroundColor: const Color(0xFFFEF3C7),
-          textColor: const Color(0xFFB45309),
+          backgroundColor: const Color(0xFFFBE8CF),
+          textColor: const Color(0xFF9E4E16),
           icon: Icons.directions_bike,
         );
       case OrderStatus.DELIVERED:
         return StatusBadge(
           text: label ?? 'Delivered',
-          backgroundColor: const Color(0xFFDCFCE7),
-          textColor: const Color(0xFF15803D),
+          backgroundColor: const Color(0xFFE5ECCF),
+          textColor: const Color(0xFF455823),
           icon: Icons.done_all,
         );
       case OrderStatus.CANCELLED:
         return StatusBadge(
           text: label ?? 'Cancelled',
-          backgroundColor: const Color(0xFFFEE2E2),
-          textColor: const Color(0xFFB91C1C),
+          backgroundColor: const Color(0xFFF8DFD8),
+          textColor: const Color(0xFF963625),
           icon: Icons.cancel_outlined,
         );
     }
@@ -302,26 +302,26 @@ class StatusBadge extends StatelessWidget {
       case DietaryType.VEG:
         return StatusBadge(
           text: label ?? 'Veg',
-          backgroundColor: const Color(0xFFDCFCE7),
-          textColor: const Color(0xFF166534),
+          backgroundColor: const Color(0xFFE5ECCF),
+          textColor: const Color(0xFF455823),
         );
       case DietaryType.NON_VEG:
         return StatusBadge(
           text: label ?? 'Non-Veg',
-          backgroundColor: const Color(0xFFFEE2E2),
-          textColor: const Color(0xFF991B1B),
+          backgroundColor: const Color(0xFFF8DFD8),
+          textColor: const Color(0xFF963625),
         );
       case DietaryType.VEGAN:
         return StatusBadge(
           text: label ?? 'Vegan',
-          backgroundColor: const Color(0xFFE0E7FF),
-          textColor: const Color(0xFF3730A3),
+          backgroundColor: const Color(0xFFE8EFE8),
+          textColor: const Color(0xFF38573D),
         );
       case DietaryType.CONTAINS_EGG:
         return StatusBadge(
           text: label ?? 'Egg',
-          backgroundColor: const Color(0xFFFEF3C7),
-          textColor: const Color(0xFF92400E),
+          backgroundColor: const Color(0xFFFBF1D5),
+          textColor: const Color(0xFF8A5A1B),
         );
     }
   }
@@ -333,6 +333,7 @@ class StatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: textColor.withOpacity(0.18), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
