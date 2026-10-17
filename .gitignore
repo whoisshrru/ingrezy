@@ -1,4 +1,26 @@
-
+# Dependencies
 node_modules/
 dist/
-.env
+
+# Environment and Secrets
+.env*
+!.env.example
+*.pem
+*.key
+
+# Database dumps and backups
+*.dump
+*.backup
+*.bak
+ingrezy_db_backup.dump
+
+# Build artifacts
+.next/
+build/
+
+# Logs and OS files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,390 @@
+{
+  "@@locale": "en",
+  "appName": "Ingrezy",
+  "appTagline": "Instant 10-Minute Grocery & Smart Recipe Bundling",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "retry": "Retry",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "close": "Close",
+  "confirm": "Confirm",
+  "back": "Back",
+  "search": "Search",
+  "viewAll": "See All",
+  "loading": "Loading...",
+  "error": "Error",
+  "somethingWentWrong": "Something went wrong",
+  "noInternet": "No internet connection",
+  "success": "Success",
+  "warning": "Warning",
+  "requiredField": "This field is required",
+
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "english": "English",
+  "marathi": "मराठी (Marathi)",
+  "hindi": "हिंदी (Hindi)",
+  "languageChanged": "Language changed successfully",
+  "settings": "Settings",
+  "profile": "Profile",
+  "logOut": "Log Out",
+  "logOutConfirmTitle": "Log Out",
+  "logOutConfirmMessage": "Are you sure you want to log out of Ingrezy?",
+
+  "navGrocery": "Grocery",
+  "navRecipes": "Recipes",
+  "navCart": "Cart",
+  "navOrders": "Orders",
+
+  "welcomeBack": "Welcome Back",
+  "loginSubtitle": "Log in to your Ingrezy account",
+  "phoneNumber": "Phone Number",
+  "phoneHint": "Enter 10-digit mobile number",
+  "password": "Password",
+  "passwordHint": "Enter your password",
+  "login": "Log In",
+  "loggingIn": "Logging In...",
+  "dontHaveAccount": "Don't have an account?",
+  "signUp": "Sign Up",
+  "createAccount": "Create Account",
+  "registerSubtitle": "Join Ingrezy for 10-minute grocery delivery & smart recipes",
+  "fullName": "Full Name",
+  "nameHint": "Enter your full name",
+  "emailOptional": "Email Address (Optional)",
+  "emailHint": "Enter email address",
+  "passwordCreateHint": "Create a secure password",
+  "selectRole": "Select Account Type",
+  "roleCustomer": "Customer",
+  "roleRetailer": "Dark Store Retailer",
+  "roleDelivery": "Delivery Partner",
+  "register": "Register",
+  "registering": "Registering...",
+  "alreadyHaveAccount": "Already have an account?",
+  "invalidPhone": "Please enter a valid 10-digit phone number",
+  "invalidPassword": "Password must be at least 6 characters",
+  "fillAllFields": "Please fill in all required fields",
+  "loginFailed": "Login failed. Please check your credentials.",
+  "registrationFailed": "Registration failed. Please try again.",
+
+  "tenMinsDelivery": "10 MINS DELIVERY",
+  "selectStoreTitle": "Select Nearest Dark Store",
+  "selectStoreSubtitle": "Groceries and prices adapt to store micro-warehouse availability.",
+  "noActiveStores": "No active stores found",
+  "ingrezyStore": "Ingrezy Store",
+  "searchHint": "Search groceries, dairy, spices...",
+  "shopByCategory": "Shop by Category",
+  "allProducts": "All Products",
+  "popularGroceries": "Popular Groceries",
+  "noProductsFound": "No products found matching your search",
+  "noProductsInCategory": "No products available in this category",
+  "categoryVegetables": "Vegetables",
+  "categoryMeat": "Meat",
+  "categoryDairy": "Dairy",
+  "categoryBakery": "Bakery",
+  "categoryPantry": "Pantry",
+  "categoryGrains": "Grains",
+  "categoryFruits": "Fruits",
+  "categoryBeverages": "Beverages",
+  "categorySnacks": "Snacks",
+
+  "add": "ADD",
+  "added": "Added",
+  "inCart": "In Cart",
+  "outOfStock": "Out of Stock",
+  "discontinued": "Discontinued",
+  "price": "Price",
+  "unitPrice": "Unit Price",
+  "category": "Category",
+  "freshGuarantee": "100% Quality & Freshness Guarantee",
+  "standardDelivery": "Standard Delivery: 10 mins",
+  "productDetails": "Product Details",
+  "relatedProducts": "You Might Also Need",
+
+  "smartRecipes": "Smart Recipes",
+  "recipesSubtitle": "Explore delicious dishes and bundle required fresh ingredients in 1 tap.",
+  "searchRecipesHint": "Search recipes by name or cuisine...",
+  "cuisine": "Cuisine",
+  "difficulty": "Difficulty",
+  "allCuisines": "All Cuisines",
+  "allDifficulties": "All Difficulties",
+  "prepTime": "Prep Time",
+  "cookTime": "Cook Time",
+  "totalTime": "Total Time",
+  "servings": "Servings",
+  "portionAndServings": "Portion & Servings",
+  "baseRecipeServes": "Base recipe serves {baseServings} • Quantities auto-scale",
+  "@baseRecipeServes": {
+    "placeholders": {
+      "baseServings": { "type": "int" }
+    }
+  },
+  "ingredients": "Ingredients",
+  "scaledFor": "Scaled for {servings} {personText}",
+  "@scaledFor": {
+    "placeholders": {
+      "servings": { "type": "int" },
+      "personText": { "type": "String" }
+    }
+  },
+  "person": "person",
+  "people": "people",
+  "preparationSteps": "Preparation Steps",
+  "markInPantryHelp": "Mark ingredients you already have at home",
+  "inPantryBadge": "{count} in pantry",
+  "@inPantryBadge": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "inPantry": "In Pantry",
+  "iHaveThis": "I have this",
+  "haveIt": "Have it?",
+  "addAllToCart": "Add All Ingredients to Cart ({count})",
+  "@addAllToCart": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "addRemainingToCart": "Add Remaining ({count}) to Cart",
+  "@addRemainingToCart": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "allInPantryBtn": "All in Pantry (Nothing to Buy)",
+  "addingToCart": "Adding Ingredients to Cart...",
+  "switchStoreTitle": "Switch Store?",
+  "switchStoreRecipeMessage": "Your cart contains items from another store. Adding this recipe will clear existing items to bundle from the selected store. Proceed?",
+  "switchStoreAndAdd": "Switch Store & Add",
+  "partialRecipeBundle": "Partial Recipe Bundle",
+  "partialBundleMessage": "Added {count} available ingredients to your cart ({excluded} marked in pantry).\n\nThe following items could not be added:",
+  "@partialBundleMessage": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "excluded": { "type": "int" }
+    }
+  },
+  "allInPantrySnack": "All ingredients are in your pantry! Nothing was added to cart.",
+  "recipeAddedSnack": "{count} ingredients added to cart ({excluded} in pantry) 🛒",
+  "@recipeAddedSnack": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "excluded": { "type": "int" }
+    }
+  },
+  "allRecipeAddedSnack": "All {count} recipe ingredients added to your cart! 🛒",
+  "@allRecipeAddedSnack": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itemsUnavailableTitle": "Items Unavailable",
+  "itemsUnavailableMessage": "No ingredients could be added. The remaining required items are currently out of stock at this store:",
+  "noRecipesFound": "No recipes found",
+
+  "myCart": "My Cart",
+  "clearCartTitle": "Clear Cart?",
+  "clearCartMessage": "Are you sure you want to remove all items from your cart?",
+  "cartEmptyTitle": "Your cart is empty",
+  "cartEmptyDesc": "Add groceries or recipe bundles to get started with instant delivery.",
+  "browseGroceries": "Browse Groceries",
+  "deliveryAddress": "Delivery Address",
+  "selectDeliveryAddress": "Select Delivery Address",
+  "change": "Change",
+  "addAddress": "Add Address",
+  "noAddressSelected": "Please select or add a delivery address to proceed",
+  "billDetails": "Bill Details",
+  "itemTotal": "Item Total",
+  "deliveryFee": "Delivery Fee",
+  "free": "FREE",
+  "toPay": "To Pay",
+  "proceedToCheckout": "Proceed to Checkout",
+  "placingOrder": "Placing Order...",
+  "orderSuccessTitle": "Order Placed Successfully! 🎉",
+  "orderSuccessMessage": "Your 10-minute instant delivery is being prepped at the store.",
+  "viewOrder": "View Order",
+  "viewCart": "VIEW CART",
+  "itemRemoved": "Item removed from cart",
+  "freeDeliveryNotice": "Add items worth ₹{amount} more for FREE delivery",
+  "@freeDeliveryNotice": {
+    "placeholders": {
+      "amount": { "type": "int" }
+    }
+  },
+
+  "savedAddresses": "Saved Addresses",
+  "addNewAddress": "Add New Address",
+  "addressLabel": "Address Label (e.g. Home, Work)",
+  "addressLine1": "Flat / House No. / Building / Street",
+  "addressLine2": "Area / Sector / Locality (Optional)",
+  "landmark": "Landmark (Optional)",
+  "city": "City",
+  "state": "State",
+  "postalCode": "PIN Code",
+  "setAsDefault": "Set as Default Address",
+  "saveAddress": "Save Address",
+  "saving": "Saving...",
+  "deleteAddressTitle": "Delete Address?",
+  "deleteAddressMessage": "Are you sure you want to remove this address?",
+  "noAddressesYet": "No addresses saved yet. Add your delivery location.",
+
+  "myOrders": "My Orders",
+  "noOrdersYet": "No orders yet",
+  "noOrdersDesc": "When you place a grocery or recipe bundle order, you will see it here with live tracking.",
+  "startShopping": "Start Shopping",
+  "orderDetails": "Order Details",
+  "orderNumber": "Order #{number}",
+  "@orderNumber": {
+    "placeholders": {
+      "number": { "type": "String" }
+    }
+  },
+  "placedOn": "Placed On",
+  "orderStatus": "Order Status",
+  "deliveryStatus": "Delivery Status",
+  "items": "Items",
+  "paymentMethod": "Payment Method",
+  "paymentStatus": "Payment Status",
+  "cashOnDelivery": "Cash on Delivery",
+  "deliveryPartner": "Delivery Partner",
+  "partnerAssigned": "Assigned",
+  "partnerNotAssigned": "Not assigned yet",
+  "securityOtpTitle": "Delivery Security Code (OTP)",
+  "securityOtpDesc": "Share this OTP with your delivery partner at the time of delivery to confirm drop-off.",
+
+  "statusPlaced": "Order Placed",
+  "statusConfirmed": "Confirmed",
+  "statusPreparing": "Preparing",
+  "statusReadyForPickup": "Ready for Pickup",
+  "statusOutForDelivery": "Out for Delivery",
+  "statusDelivered": "Delivered",
+  "statusCancelled": "Cancelled",
+  "statusPending": "Pending",
+  "statusCompleted": "Completed",
+  "statusFailed": "Failed",
+
+  "dietaryVeg": "VEG",
+  "dietaryNonVeg": "NON-VEG",
+  "dietaryEgg": "EGG",
+
+  "retailerHub": "Dark Store Retailer Hub",
+  "storeOverview": "Store Overview",
+  "stockManagement": "Manage Stock",
+  "allOrdersTab": "All Orders ({count})",
+  "@allOrdersTab": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "newPlacedTab": "New Placed",
+  "confirmedTab": "Confirmed",
+  "packingTab": "Packing",
+  "readyTab": "Ready",
+  "confirmOrderAction": "Confirm Order",
+  "startPackingAction": "Start Packing",
+  "markReadyAction": "Mark Ready for Pickup",
+  "updateStockTitle": "Update Inventory Stock",
+  "currentStock": "Current Stock: {qty}",
+  "@currentStock": {
+    "placeholders": {
+      "qty": { "type": "int" }
+    }
+  },
+  "unitPriceLabel": "Unit Price: ₹{price}",
+  "@unitPriceLabel": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "saveStock": "Save Stock Changes",
+  "noOrdersForStatus": "No orders in this status right now.",
+
+  "deliveryHub": "Delivery Partner Hub",
+  "activeDeliveries": "Active Assignment",
+  "completedDrops": "Completed Drops: {count}",
+  "@completedDrops": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "simulateGps": "Simulate GPS Update",
+  "acceptTaskAction": "Accept Delivery Task",
+  "pickupOrderAction": "Pick Up Order from Store",
+  "arrivedLocationAction": "Arrived at Customer Location",
+  "verifyOtpAction": "Verify OTP & Complete Delivery",
+  "verifyOtpTitle": "Verify Customer OTP",
+  "verifyOtpSubtitle": "Ask customer for their 6-digit delivery security code to complete this drop-off.",
+  "enterOtpDigits": "Please enter all 6 digits",
+  "otpVerifiedSuccess": "OTP Verified! Delivery marked as completed.",
+  "customerContact": "Customer Contact",
+  "deliveryLocation": "Delivery Location",
+  "noActiveDeliveries": "No active delivery assignments. Stand by for orders!",
+  "trackOrder": "Track Order",
+  "orderTrackingTitle": "Order Tracking & Details",
+  "viewDeliveryOtp": "View Delivery OTP (For Delivery Partner)",
+  "otpInstruction": "Share this 6-digit OTP with your delivery partner only after receiving all grocery packages.",
+  "otpExpiresNotice": "Expires in 15 minutes • Single Use",
+  "otpPartnerNotAssigned": "OTP is only available when an active delivery partner is assigned.",
+  "grandTotal": "Grand Total",
+  "itemsOrdered": "Items Ordered",
+  "orderNotFound": "Order not found",
+  "orderNotFoundDesc": "Could not find details for the requested order.",
+  "refresh": "Refresh",
+  "defaultBadge": "DEFAULT",
+  "storeManagerPortal": "Store Manager Portal",
+  "selectNextStep": "Select Next Order Processing Step:",
+  "cancelAndRestock": "Cancel & Restock Inventory",
+  "startPackingGroceries": "Start Packing Groceries (PREPARING)",
+  "orderHandedOff": "This order is handed off to delivery partner or completed.",
+  "updateStatus": "Update Status",
+  "storeInventoryTitle": "Store Inventory & Stock",
+  "searchInventoryHint": "Search inventory items...",
+  "updateSellingPrice": "Update Selling Price",
+  "storeSellingPrice": "Store Selling Price (₹)",
+  "available": "Available",
+  "disabled": "Disabled",
+  "noInventoryItems": "No inventory items",
+  "noInventoryDesc": "No products match your inventory search.",
+  "assignedTasks": "Assigned Tasks",
+  "activeTasksCount": "{count} active",
+  "@activeTasksCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "allCaughtUp": "All caught up!",
+  "allCaughtUpDesc": "New 10-minute grocery delivery assignments will notify you automatically.",
+  "onlineStatus": "ONLINE",
+  "pickupFromStore": "Pickup: {store}",
+  "@pickupFromStore": {
+    "placeholders": {
+      "store": { "type": "String" }
+    }
+  },
+  "dropAtLocation": "Drop: {address}",
+  "@dropAtLocation": {
+    "placeholders": {
+      "address": { "type": "String" }
+    }
+  },
+  "confirmStorePickupAction": "Confirm Dark Store Pickup (OUT FOR DELIVERY)",
+  "verifyAndComplete": "Verify & Complete",
+  "gpsLocationBroadcasted": "Live GPS Location broadcasted to customer! 🛰️",
+  "productOverview": "Product Overview",
+  "totalInCart": "Total in cart",
+  "defaultProductDesc": "Fresh, quality checked grocery item sourced directly from trusted dark stores for ultra-fast 10-minute delivery.",
+  "deliveryPromiseHeader": "10-Minute Dark Store Delivery",
+  "deliveryPromiseDesc": "Packed fresh at nearest micro-warehouse with tamper-proof seal.",
+  "clearAndSwitchStore": "Clear & Switch Store",
+  "switchStoreCartMsg": "Your cart contains items from another store. Clear cart to add from this store?",
+  "selectStorePrompt": "Please select a dark store before adding items.",
+  "addToCartPrice": "Add to Cart • ₹{price}",
+  "@addToCartPrice": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  }
+}
+
