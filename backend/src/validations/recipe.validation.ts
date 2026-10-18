@@ -1,13 +1,24 @@
 import { z } from "zod";
 import { DietaryType } from "@prisma/client";
 
-export const recipeIngredientInputSchema = z.object({
-  productId: z.string().uuid("Invalid product ID format"),
-  quantity: z.number().positive("Ingredient quantity must be greater than zero"),
-  unit: z.string().trim().min(1, "Ingredient unit is required (e.g. g, ml, piece, tsp, cup)"),
-  isMandatory: z.boolean().optional().default(true),
-  notes: z.string().trim().max(200, "Notes cannot exceed 200 characters").optional(),
-});
+export const recipeIngredientInputSchema = z
+  .object({
+    productId: z.string().uuid("Invalid product ID format").nullable().optional(),
+    ingredientName: z.string().trim().optional(),
+    quantity: z.number().positive("Ingredient quantity must be greater than zero"),
+    unit: z.string().trim().min(1, "Ingredient unit is required (e.g. g, ml, piece, tsp, cup)"),
+    isMandatory: z.boolean().optional().default(true),
+    notes: z.string().trim().max(200, "Notes cannot exceed 200 characters").optional(),
+  })
+  .refine(
+    (data) =>
+      (data.ingredientName && data.ingredientName.trim().length > 0) ||
+      (data.productId && data.productId.trim().length > 0),
+    {
+      message: "Either ingredientName or a valid linked productId must be provided",
+      path: ["ingredientName"],
+    }
+  );
 
 export const createRecipeSchema = z.object({
   title: z.string().trim().min(2, "Recipe title must be at least 2 characters long"),

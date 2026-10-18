@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import AdminLayout from "@/components/AdminLayout";
 import { apiClient } from "@/lib/api";
 import {
@@ -15,6 +16,7 @@ import {
   X,
   CheckCircle2,
   ExternalLink,
+  Boxes,
 } from "lucide-react";
 
 interface Product {
@@ -302,13 +304,22 @@ export default function ProductsPage() {
               <RefreshCw className={`w-3.5 h-3.5 text-[#B34E22] ${isLoading ? "animate-spin" : ""}`} />
             </button>
 
+            <Link
+              href="/inventory"
+              style={{ color: "#504932", backgroundColor: "#FFFFFF", borderColor: "#E8E2D5" }}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-[#FAF6ED] text-[#504932] text-xs font-bold rounded-xl border border-[#E8E2D5] shadow-xs transition-all cursor-pointer"
+            >
+              <Boxes className="w-4 h-4 text-[#B34E22]" />
+              <span className="font-bold">Manage Stock</span>
+            </Link>
+
             <button
               onClick={openCreateModal}
               style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
               className="flex items-center gap-1.5 px-4 py-2.5 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 text-white" />
-              <span style={{ color: "#ffffff" }} className="text-white font-bold">Add Product</span>
+              <span style={{ color: "#ffffff" }} className="text-white font-bold">+ Add Product</span>
             </button>
           </div>
         </div>
@@ -554,9 +565,25 @@ export default function ProductsPage() {
                       type="text"
                       value={formData.unit}
                       onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                      placeholder="e.g. 1kg, 500g, 1 piece"
+                      placeholder="e.g. 1kg, 500g, 1 piece, packet"
                       className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
                     />
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {["1kg", "500g", "250g", "1 litre", "500ml", "1 piece", "1 packet"].map((u) => (
+                        <button
+                          key={u}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, unit: u })}
+                          className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors cursor-pointer ${
+                            formData.unit === u
+                              ? "bg-[#B34E22] text-white border-[#B34E22]"
+                              : "bg-[#FAF6ED] text-[#7A7056] border-[#E8E2D5] hover:bg-[#EBD3AA]/50"
+                          }`}
+                        >
+                          {u}
+                        </button>
+                      ))}
+                    </div>
                     {formErrors.unit && (
                       <p className="text-[11px] text-red-600 mt-1 font-semibold">{formErrors.unit}</p>
                     )}

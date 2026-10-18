@@ -8,6 +8,7 @@ import {
   updateRecipe,
   deleteRecipe,
   importMealDbRecipe,
+  searchMealDbRecipes,
 } from "../controllers/recipe.controller.js";
 import { authenticate, requireRole } from "../middlewares/auth.middleware.js";
 
@@ -15,6 +16,7 @@ const router = Router();
 
 // Public recipe browsing & ingestion routes
 router.get("/", listRecipes);
+router.get("/import/themealdb/search", searchMealDbRecipes);
 router.post("/import/themealdb/:mealId", importMealDbRecipe);
 router.post("/import-mealdb/:mealId", importMealDbRecipe);
 router.get("/:identifier/preview", previewRecipeIngredients);

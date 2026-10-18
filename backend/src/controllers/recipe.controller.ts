@@ -8,7 +8,7 @@ import {
   recipeQuerySchema,
   recipePreviewQuerySchema,
 } from "../validations/recipe.validation.js";
-import { importRecipeFromTheMealDb } from "../services/themealdb.service.js";
+import { importRecipeFromTheMealDb, searchMealDb } from "../services/themealdb.service.js";
 
 /**
  * Helper to safely extract string param from Express 5 params
@@ -264,12 +264,18 @@ export async function createRecipe(req: AuthenticatedRequest, res: Response): Pr
       ingredients,
     } = parseResult.data;
 
-    // Validate that all referenced product IDs exist in database
-    const productIds = ingredients.map((ing) => ing.productId);
-    const existingProducts = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-      select: { id: true },
-    });
+    // Validate that all referenced product IDs exist in database (for non-null productIds)
+    const productIds = ingredients
+      .map((ing) => ing.productId)
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
+
+    const existingProducts =
+      productIds.length > 0
+        ? await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            select: { id: true, name: true },
+          })
+        : [];
 
     const foundIds = new Set(existingProducts.map((p) => p.id));
     const missingIds = productIds.filter((id) => !foundIds.has(id));
@@ -281,6 +287,8 @@ export async function createRecipe(req: AuthenticatedRequest, res: Response): Pr
       });
       return;
     }
+
+    const productMap = new Map(existingProducts.map((p) => [p.id, p]));
 
     let slug = parseResult.data.slug || slugify(title);
     const existingSlug = await prisma.recipe.findUnique({ where: { slug } });
@@ -305,13 +313,17 @@ export async function createRecipe(req: AuthenticatedRequest, res: Response): Pr
         isActive,
         authorId: req.user?.id || null,
         ingredients: {
-          create: ingredients.map((ing) => ({
-            productId: ing.productId,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            isMandatory: ing.isMandatory ?? true,
-            notes: ing.notes || null,
-          })),
+          create: ingredients.map((ing) => {
+            const linkedProduct = ing.productId ? productMap.get(ing.productId) : null;
+            return {
+              productId: ing.productId || null,
+              ingredientName: ing.ingredientName?.trim() || linkedProduct?.name || "Ingredient",
+              quantity: ing.quantity,
+              unit: ing.unit,
+              isMandatory: ing.isMandatory ?? true,
+              notes: ing.notes || null,
+            };
+          }),
         },
       },
       include: {
@@ -368,12 +380,19 @@ export async function updateRecipe(req: Request, res: Response): Promise<void> {
     const input = parseResult.data;
 
     // If ingredients are being updated, verify product existence
+    let productMap = new Map<string, { id: string; name: string }>();
     if (input.ingredients) {
-      const productIds = input.ingredients.map((ing) => ing.productId);
-      const existingProducts = await prisma.product.findMany({
-        where: { id: { in: productIds } },
-        select: { id: true },
-      });
+      const productIds = input.ingredients
+        .map((ing) => ing.productId)
+        .filter((id): id is string => typeof id === "string" && id.length > 0);
+
+      const existingProducts =
+        productIds.length > 0
+          ? await prisma.product.findMany({
+              where: { id: { in: productIds } },
+              select: { id: true, name: true },
+            })
+          : [];
       const foundIds = new Set(existingProducts.map((p) => p.id));
       const missingIds = productIds.filter((pId) => !foundIds.has(pId));
 
@@ -384,6 +403,8 @@ export async function updateRecipe(req: Request, res: Response): Promise<void> {
         });
         return;
       }
+
+      productMap = new Map(existingProducts.map((p) => [p.id, p]));
     }
 
     // Atomic transaction for recipe update
@@ -392,14 +413,18 @@ export async function updateRecipe(req: Request, res: Response): Promise<void> {
       if (input.ingredients) {
         await tx.recipeIngredient.deleteMany({ where: { recipeId: id } });
         await tx.recipeIngredient.createMany({
-          data: input.ingredients.map((ing) => ({
-            recipeId: id,
-            productId: ing.productId,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            isMandatory: ing.isMandatory ?? true,
-            notes: ing.notes || null,
-          })),
+          data: input.ingredients.map((ing) => {
+            const linkedProduct = ing.productId ? productMap.get(ing.productId) : null;
+            return {
+              recipeId: id,
+              productId: ing.productId || null,
+              ingredientName: ing.ingredientName?.trim() || linkedProduct?.name || "Ingredient",
+              quantity: ing.quantity,
+              unit: ing.unit,
+              isMandatory: ing.isMandatory ?? true,
+              notes: ing.notes || null,
+            };
+          }),
         });
       }
 
@@ -717,6 +742,40 @@ export async function importMealDbRecipe(req: Request, res: Response): Promise<v
     res.status(error?.message?.includes("not found") ? 404 : 500).json({
       success: false,
       message: error?.message || "Failed to import recipe from TheMealDB.",
+    });
+  }
+}
+
+/**
+ * Search TheMealDB recipes by keyword with live preview and import status.
+ */
+export async function searchMealDbRecipes(req: Request, res: Response): Promise<void> {
+  try {
+    const query = typeof req.query.q === "string" ? req.query.q : "";
+    if (!query.trim()) {
+      res.status(400).json({
+        success: false,
+        message: "Search query 'q' is required",
+      });
+      return;
+    }
+
+    const meals = await searchMealDb(query);
+
+    res.status(200).json({
+      success: true,
+      message: `Found ${meals.length} recipe(s) from TheMealDB`,
+      data: {
+        query,
+        count: meals.length,
+        meals,
+      },
+    });
+  } catch (error: any) {
+    console.error("TheMealDB search error:", error?.message || error);
+    res.status(500).json({
+      success: false,
+      message: error?.message || "Failed to search recipes from TheMealDB",
     });
   }
 }

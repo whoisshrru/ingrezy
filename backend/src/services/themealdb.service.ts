@@ -233,3 +233,52 @@ export async function importRecipeFromTheMealDb(mealId: string) {
     },
   };
 }
+
+/**
+ * Searches recipes from TheMealDB by keyword, returning structured preview items.
+ * Checks against PostgreSQL to indicate if already imported.
+ */
+export async function searchMealDb(query: string) {
+  const cleanQuery = query.trim();
+  if (!cleanQuery) return [];
+
+  const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(cleanQuery)}`;
+
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`TheMealDB API search error: HTTP ${response.status}`);
+  }
+
+  const json = (await response.json()) as any;
+  if (!json || !json.meals || !Array.isArray(json.meals)) {
+    return [];
+  }
+
+  const externalIds = json.meals.map((m: any) => `themealdb:${m.idMeal}`);
+  const existingRecipes = await prisma.recipe.findMany({
+    where: { externalId: { in: externalIds } },
+    select: { externalId: true, id: true, slug: true },
+  });
+  const importedSet = new Set(existingRecipes.map((r) => r.externalId));
+
+  return json.meals.map((m: any) => {
+    const extracted = extractIngredientsFromMeal(m);
+    const externalKey = `themealdb:${m.idMeal}`;
+    return {
+      idMeal: m.idMeal,
+      title: m.strMeal,
+      category: m.strCategory || "General",
+      cuisine: m.strArea || "International",
+      imageUrl: m.strMealThumb || null,
+      instructions: m.strInstructions || "",
+      ingredientCount: extracted.length,
+      ingredientsSample: extracted.slice(0, 5).map((ing) => ing.rawName),
+      isAlreadyImported: importedSet.has(externalKey),
+    };
+  });
+}
+

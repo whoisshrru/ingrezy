@@ -22,12 +22,16 @@ import {
   Layers,
   Sparkles,
   Info,
+  Globe,
+  Eye,
+  Check,
 } from "lucide-react";
 
 interface RecipeIngredient {
   id?: string;
   productId?: string | null;
   ingredientName?: string | null;
+  rawMeasure?: string | null;
   quantity: number;
   unit: string;
   isMandatory: boolean;
@@ -74,16 +78,19 @@ interface CatalogProduct {
 }
 
 interface IngredientRow {
-  productId: string;
+  ingredientName: string;
   quantity: string;
   unit: string;
+  productId: string;
   isMandatory: boolean;
   notes: string;
 }
 
 interface RecipeFormData {
   title: string;
-  description: string;
+  descriptionEn: string;
+  descriptionMr: string;
+  descriptionHi: string;
   cuisine: string;
   prepTimeMinutes: string;
   cookTimeMinutes: string;
@@ -91,14 +98,30 @@ interface RecipeFormData {
   difficulty: "EASY" | "MEDIUM" | "HARD";
   dietaryType: string;
   imageUrl: string;
-  instructions: string;
+  instructionsEn: string;
+  instructionsMr: string;
+  instructionsHi: string;
   isActive: boolean;
   ingredients: IngredientRow[];
 }
 
+interface MealDbSearchResult {
+  idMeal: string;
+  title: string;
+  category: string;
+  cuisine: string;
+  imageUrl: string | null;
+  instructions: string;
+  ingredientCount: number;
+  ingredientsSample: string[];
+  isAlreadyImported: boolean;
+}
+
 const initialRecipeFormData: RecipeFormData = {
   title: "",
-  description: "",
+  descriptionEn: "",
+  descriptionMr: "",
+  descriptionHi: "",
   cuisine: "Indian",
   prepTimeMinutes: "15",
   cookTimeMinutes: "25",
@@ -106,28 +129,84 @@ const initialRecipeFormData: RecipeFormData = {
   difficulty: "EASY",
   dietaryType: "VEG",
   imageUrl: "",
-  instructions: "",
+  instructionsEn: "",
+  instructionsMr: "",
+  instructionsHi: "",
   isActive: true,
   ingredients: [
     {
-      productId: "",
+      ingredientName: "",
       quantity: "1",
       unit: "piece",
+      productId: "",
       isMandatory: true,
       notes: "",
     },
   ],
 };
 
-const CUISINES = ["ALL", "Indian", "Italian", "Mexican", "Chinese", "American", "International"];
-
-const POPULAR_MEALDB_SUGGESTIONS = [
-  { id: "52771", name: "Spicy Arrabiata Penne (Italian)" },
-  { id: "52772", name: "Teriyaki Chicken Casserole (Asian)" },
-  { id: "52874", name: "Beef and Mustard Pie (British)" },
-  { id: "52977", name: "Corba (Turkish Lentil Soup)" },
-  { id: "53065", name: "Sushi Rolls (Japanese)" },
+const CUISINES = [
+  "ALL",
+  "Indian",
+  "Italian",
+  "Mexican",
+  "Chinese",
+  "American",
+  "British",
+  "International",
 ];
+
+const POPULAR_SEARCH_PRESETS = [
+  "Chicken",
+  "Paneer",
+  "Penne",
+  "Curry",
+  "Soup",
+  "Lentil",
+  "Salad",
+];
+
+function parseMultilingual(content?: string | null): {
+  en: string;
+  mr: string;
+  hi: string;
+} {
+  if (!content) return { en: "", mr: "", hi: "" };
+
+  const mrIndex = content.indexOf("[मराठी - Marathi]");
+  const hiIndex = content.indexOf("[हिंदी - Hindi]");
+  const enIndex = content.indexOf("[English]");
+
+  if (mrIndex === -1 && hiIndex === -1 && enIndex === -1) {
+    return { en: content, mr: "", hi: "" };
+  }
+
+  let en = "";
+  let mr = "";
+  let hi = "";
+
+  const sections = content.split(/\[(English|मराठी - Marathi|हिंदी - Hindi)\]/);
+  for (let i = 1; i < sections.length; i += 2) {
+    const tag = sections[i];
+    const text = (sections[i + 1] || "").trim();
+    if (tag === "English") en = text;
+    else if (tag === "मराठी - Marathi") mr = text;
+    else if (tag === "हिंदी - Hindi") hi = text;
+  }
+
+  return { en: en || content, mr, hi };
+}
+
+function formatMultilingual(en: string, mr: string, hi: string): string {
+  const parts: string[] = [];
+  if (en.trim()) parts.push(`[English]\n${en.trim()}`);
+  if (mr.trim()) parts.push(`[मराठी - Marathi]\n${mr.trim()}`);
+  if (hi.trim()) parts.push(`[हिंदी - Hindi]\n${hi.trim()}`);
+
+  if (parts.length === 0) return "";
+  if (!mr.trim() && !hi.trim()) return en.trim();
+  return parts.join("\n\n");
+}
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -146,12 +225,17 @@ export default function RecipesPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [formData, setFormData] = useState<RecipeFormData>(initialRecipeFormData);
+  const [activeLangTab, setActiveLangTab] = useState<"en" | "mr" | "hi">("en");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
   // TheMealDB Import Modal state
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [mealDbIdInput, setMealDbIdInput] = useState("");
+  const [mealDbSearchQuery, setMealDbSearchQuery] = useState("");
+  const [isSearchingMealDb, setIsSearchingMealDb] = useState(false);
+  const [mealDbResults, setMealDbResults] = useState<MealDbSearchResult[]>([]);
+  const [previewMeal, setPreviewMeal] = useState<MealDbSearchResult | null>(null);
+  const [manualMealIdInput, setManualMealIdInput] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{
     isAlreadyImported: boolean;
@@ -207,15 +291,18 @@ export default function RecipesPage() {
     setSelectedRecipe(null);
   };
 
+  // Open Create Recipe Modal
   const openCreateModal = () => {
     setEditingRecipe(null);
+    setActiveLangTab("en");
     setFormData({
       ...initialRecipeFormData,
       ingredients: [
         {
-          productId: catalogProducts[0]?.id || "",
+          ingredientName: "",
           quantity: "1",
-          unit: catalogProducts[0]?.unit || "piece",
+          unit: "piece",
+          productId: "",
           isMandatory: true,
           notes: "",
         },
@@ -225,9 +312,11 @@ export default function RecipesPage() {
     setIsFormModalOpen(true);
   };
 
+  // Open Edit Recipe Modal
   const openEditModal = async (recipe: Recipe) => {
     setEditingRecipe(recipe);
-    // Fetch full recipe details with ingredients
+    setActiveLangTab("en");
+
     let fullRecipe = recipe;
     if (!recipe.ingredients) {
       const res = await apiClient<{ recipe: Recipe }>(`/api/recipes/${recipe.id}`);
@@ -236,22 +325,25 @@ export default function RecipesPage() {
       }
     }
 
+    const parsedInstructions = parseMultilingual(fullRecipe.instructions);
+    const parsedDescription = parseMultilingual(fullRecipe.description);
+
     const rows: IngredientRow[] =
       fullRecipe.ingredients && fullRecipe.ingredients.length > 0
-        ? fullRecipe.ingredients
-            .filter((ing) => Boolean(ing.productId))
-            .map((ing) => ({
-              productId: ing.productId || "",
-              quantity: String(ing.quantity),
-              unit: ing.unit || "piece",
-              isMandatory: ing.isMandatory,
-              notes: ing.notes || "",
-            }))
+        ? fullRecipe.ingredients.map((ing) => ({
+            ingredientName: ing.ingredientName || ing.product?.name || "",
+            quantity: String(ing.quantity),
+            unit: ing.unit || "piece",
+            productId: ing.productId || "",
+            isMandatory: ing.isMandatory,
+            notes: ing.notes || "",
+          }))
         : [
             {
-              productId: catalogProducts[0]?.id || "",
+              ingredientName: "",
               quantity: "1",
               unit: "piece",
+              productId: "",
               isMandatory: true,
               notes: "",
             },
@@ -259,7 +351,9 @@ export default function RecipesPage() {
 
     setFormData({
       title: fullRecipe.title,
-      description: fullRecipe.description || "",
+      descriptionEn: parsedDescription.en,
+      descriptionMr: parsedDescription.mr,
+      descriptionHi: parsedDescription.hi,
       cuisine: fullRecipe.cuisine || "Indian",
       prepTimeMinutes: String(fullRecipe.prepTimeMinutes || 15),
       cookTimeMinutes: String(fullRecipe.cookTimeMinutes || 25),
@@ -267,17 +361,11 @@ export default function RecipesPage() {
       difficulty: (fullRecipe.difficulty as any) || "EASY",
       dietaryType: fullRecipe.dietaryType || "VEG",
       imageUrl: fullRecipe.imageUrl || "",
-      instructions: fullRecipe.instructions || "",
+      instructionsEn: parsedInstructions.en,
+      instructionsMr: parsedInstructions.mr,
+      instructionsHi: parsedInstructions.hi,
       isActive: fullRecipe.isActive,
-      ingredients: rows.length > 0 ? rows : [
-        {
-          productId: catalogProducts[0]?.id || "",
-          quantity: "1",
-          unit: "piece",
-          isMandatory: true,
-          notes: "",
-        },
-      ],
+      ingredients: rows,
     });
     setFormErrors({});
     setIsFormModalOpen(true);
@@ -289,15 +377,17 @@ export default function RecipesPage() {
     setFormErrors({});
   };
 
+  // Ingredient Row Management
   const addIngredientRow = () => {
     setFormData((prev) => ({
       ...prev,
       ingredients: [
         ...prev.ingredients,
         {
-          productId: catalogProducts[0]?.id || "",
+          ingredientName: "",
           quantity: "1",
           unit: "piece",
+          productId: "",
           isMandatory: true,
           notes: "",
         },
@@ -306,29 +396,56 @@ export default function RecipesPage() {
   };
 
   const removeIngredientRow = (index: number) => {
-    if (formData.ingredients.length <= 1) return;
-    setFormData((prev) => ({
-      ...prev,
-      ingredients: prev.ingredients.filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateIngredientRow = (index: number, field: keyof IngredientRow, value: any) => {
     setFormData((prev) => {
       const updated = [...prev.ingredients];
-      updated[index] = { ...updated[index], [field]: value };
+      updated.splice(index, 1);
       return { ...prev, ingredients: updated };
     });
   };
 
+  const updateIngredientRow = (
+    index: number,
+    field: keyof IngredientRow,
+    value: any
+  ) => {
+    setFormData((prev) => {
+      const updated = [...prev.ingredients];
+      const row = { ...updated[index], [field]: value };
+
+      // If user chooses a grocery catalog product, auto-fill name & unit if blank
+      if (field === "productId" && value) {
+        const prod = catalogProducts.find((p) => p.id === value);
+        if (prod) {
+          if (!row.ingredientName.trim()) {
+            row.ingredientName = prod.name;
+          }
+          if (!row.unit.trim() || row.unit === "piece") {
+            row.unit = prod.unit;
+          }
+        }
+      }
+
+      updated[index] = row;
+      return { ...prev, ingredients: updated };
+    });
+  };
+
+  // Form Validation
   const validateRecipeForm = (): boolean => {
     const errs: Record<string, string> = {};
     if (!formData.title.trim() || formData.title.trim().length < 2) {
       errs.title = "Recipe title must be at least 2 characters";
     }
-    if (!formData.instructions.trim() || formData.instructions.trim().length < 10) {
-      errs.instructions = "Instructions must be at least 10 characters long";
+
+    const hasInstructions =
+      formData.instructionsEn.trim().length >= 10 ||
+      formData.instructionsMr.trim().length >= 10 ||
+      formData.instructionsHi.trim().length >= 10;
+
+    if (!hasInstructions) {
+      errs.instructions = "Instructions must be at least 10 characters long (fill in English, Marathi, or Hindi)";
     }
+
     const servingsNum = parseInt(formData.servings, 10);
     if (isNaN(servingsNum) || servingsNum < 1) {
       errs.servings = "Servings must be at least 1";
@@ -353,8 +470,8 @@ export default function RecipesPage() {
       errs.ingredients = "A recipe must contain at least one ingredient";
     } else {
       formData.ingredients.forEach((ing, i) => {
-        if (!ing.productId) {
-          errs[`ing_${i}_product`] = "Product is required";
+        if (!ing.ingredientName.trim() && !ing.productId) {
+          errs[`ing_${i}_name`] = "Ingredient name or mapped product is required";
         }
         const qNum = parseFloat(ing.quantity);
         if (isNaN(qNum) || qNum <= 0) {
@@ -370,6 +487,7 @@ export default function RecipesPage() {
     return Object.keys(errs).length === 0;
   };
 
+  // Save Recipe
   const handleSaveRecipe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateRecipeForm()) return;
@@ -377,9 +495,21 @@ export default function RecipesPage() {
     setIsSaving(true);
     setFormErrors({});
 
+    const formattedInstructions = formatMultilingual(
+      formData.instructionsEn,
+      formData.instructionsMr,
+      formData.instructionsHi
+    );
+
+    const formattedDescription = formatMultilingual(
+      formData.descriptionEn,
+      formData.descriptionMr,
+      formData.descriptionHi
+    );
+
     const payload = {
       title: formData.title.trim(),
-      description: formData.description.trim() || undefined,
+      description: formattedDescription || undefined,
       cuisine: formData.cuisine.trim(),
       prepTimeMinutes: parseInt(formData.prepTimeMinutes, 10),
       cookTimeMinutes: parseInt(formData.cookTimeMinutes, 10),
@@ -387,10 +517,11 @@ export default function RecipesPage() {
       difficulty: formData.difficulty,
       dietaryType: formData.dietaryType,
       imageUrl: formData.imageUrl.trim() || undefined,
-      instructions: formData.instructions.trim(),
+      instructions: formattedInstructions,
       isActive: formData.isActive,
       ingredients: formData.ingredients.map((ing) => ({
-        productId: ing.productId,
+        ingredientName: ing.ingredientName.trim() || undefined,
+        productId: ing.productId || undefined,
         quantity: parseFloat(ing.quantity),
         unit: ing.unit.trim(),
         isMandatory: ing.isMandatory,
@@ -424,8 +555,8 @@ export default function RecipesPage() {
     } else {
       if (res.errors && res.errors.length > 0) {
         const backendErrs: Record<string, string> = {};
-        res.errors.forEach((e) => {
-          backendErrs[e.field] = e.message;
+        res.errors.forEach((err) => {
+          backendErrs[err.field] = err.message;
         });
         setFormErrors(backendErrs);
       } else {
@@ -435,8 +566,12 @@ export default function RecipesPage() {
     setIsSaving(false);
   };
 
+  // TheMealDB Import Modal
   const openImportModal = () => {
-    setMealDbIdInput("");
+    setMealDbSearchQuery("");
+    setMealDbResults([]);
+    setPreviewMeal(null);
+    setManualMealIdInput("");
     setImportResult(null);
     setImportError(null);
     setIsImportModalOpen(true);
@@ -446,14 +581,40 @@ export default function RecipesPage() {
     setIsImportModalOpen(false);
     setImportResult(null);
     setImportError(null);
+    setPreviewMeal(null);
   };
 
-  const handleImportMealDb = async (e?: React.FormEvent, customId?: string) => {
-    if (e) e.preventDefault();
-    const targetId = (customId || mealDbIdInput).trim();
+  // Search TheMealDB via backend API
+  const handleSearchMealDb = async (customQuery?: string) => {
+    const q = (customQuery !== undefined ? customQuery : mealDbSearchQuery).trim();
+    if (!q) return;
 
+    setIsSearchingMealDb(true);
+    setImportError(null);
+    setPreviewMeal(null);
+
+    const res = await apiClient<{
+      query: string;
+      count: number;
+      meals: MealDbSearchResult[];
+    }>(`/api/recipes/import/themealdb/search?q=${encodeURIComponent(q)}`);
+
+    if (res.success && res.data) {
+      setMealDbResults(res.data.meals);
+      if (res.data.meals.length === 0) {
+        setImportError(`No recipes found on TheMealDB matching '${q}'.`);
+      }
+    } else {
+      setImportError(res.message || "Failed to search TheMealDB");
+    }
+    setIsSearchingMealDb(false);
+  };
+
+  // Import TheMealDB Recipe by ID
+  const handleImportMealDb = async (mealId: string) => {
+    const targetId = mealId.trim();
     if (!targetId || !/^\d+$/.test(targetId)) {
-      setImportError("Please enter a valid numeric TheMealDB ID (e.g. 52771).");
+      setImportError("Please specify a valid numeric TheMealDB ID.");
       return;
     }
 
@@ -475,6 +636,12 @@ export default function RecipesPage() {
         stats: res.data.stats,
         message: res.message,
       });
+
+      // Update isAlreadyImported state in search results list
+      setMealDbResults((prev) =>
+        prev.map((m) => (m.idMeal === targetId ? { ...m, isAlreadyImported: true } : m))
+      );
+
       fetchRecipes();
       if (res.data.recipe) {
         viewRecipeDetails(res.data.recipe.id);
@@ -485,6 +652,7 @@ export default function RecipesPage() {
     setIsImporting(false);
   };
 
+  // Delete Recipe
   const openDeleteModal = (recipe: Recipe) => {
     setRecipeToDelete(recipe);
     setDeleteError(null);
@@ -546,7 +714,7 @@ export default function RecipesPage() {
               <span>Smart Recipes Engine</span>
             </h2>
             <p className="text-xs text-[#7A7056] mt-0.5">
-              Manage cuisines, recipe ingredient mappings, serving calculators, and TheMealDB imports
+              Manage multi-lingual cooking instructions, ingredient catalog mappings, and TheMealDB imports
             </p>
           </div>
 
@@ -573,22 +741,24 @@ export default function RecipesPage() {
               <RefreshCw className={`w-3.5 h-3.5 text-[#B34E22] ${isLoading ? "animate-spin" : ""}`} />
             </button>
 
+            {/* Import Recipe Button */}
             <button
               onClick={openImportModal}
               style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
               className="flex items-center gap-1.5 px-3.5 py-2.5 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] text-xs font-extrabold rounded-xl border-2 border-[#C8BEA7] shadow-xs transition-all cursor-pointer"
             >
               <DownloadCloud className="w-4 h-4 text-[#B34E22]" />
-              <span style={{ color: "#504932" }} className="font-extrabold">Import TheMealDB</span>
+              <span className="font-extrabold">Import Recipe</span>
             </button>
 
+            {/* + Add Recipe Button */}
             <button
               onClick={openCreateModal}
               style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
               className="flex items-center gap-1.5 px-4 py-2.5 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 text-white" />
-              <span style={{ color: "#ffffff" }} className="text-white font-bold">Create Recipe</span>
+              <span style={{ color: "#ffffff" }} className="text-white font-bold">+ Add Recipe</span>
             </button>
           </div>
         </div>
@@ -633,9 +803,7 @@ export default function RecipesPage() {
                     : "bg-white text-[#504932] hover:bg-[#FAF6ED]"
                 }`}
               >
-                <span style={{ color: isActive ? "#ffffff" : "#504932" }} className="font-extrabold">
-                  {c}
-                </span>
+                <span>{c}</span>
               </button>
             );
           })}
@@ -649,30 +817,38 @@ export default function RecipesPage() {
               <p className="font-semibold text-xs">Loading smart recipe library...</p>
             </div>
           ) : recipes.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-[#7A7056] bg-white border border-[#E8E2D5] rounded-3xl p-8">
-              <BookOpen className="w-10 h-10 text-[#9C937E] mx-auto mb-3 opacity-50" />
+            <div className="col-span-full py-16 text-center text-[#7A7056] bg-white rounded-3xl border border-[#E8E2D5] p-8">
+              <ChefHat className="w-10 h-10 text-[#9C937E] mx-auto mb-3 opacity-60" />
               <h3 className="font-bold text-sm text-[#504932]">No recipes found</h3>
-              <p className="text-xs text-[#7A7056] mt-1 max-w-sm mx-auto">
-                Try searching for another dish, changing your cuisine filter, or importing recipes from TheMealDB.
+              <p className="text-xs text-[#7A7056] max-w-sm mx-auto mt-1 mb-4">
+                {selectedCuisine !== "ALL"
+                  ? `No recipes found under ${selectedCuisine} cuisine.`
+                  : "Start creating signature dishes or import from TheMealDB."}
               </p>
-              <button
-                onClick={openImportModal}
-                style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl shadow-xs"
-              >
-                <DownloadCloud className="w-4 h-4 text-white" />
-                <span>Import from TheMealDB</span>
-              </button>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={openCreateModal}
+                  style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
+                  className="px-4 py-2 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl cursor-pointer"
+                >
+                  + Add Recipe
+                </button>
+                <button
+                  onClick={openImportModal}
+                  className="px-4 py-2 bg-[#FAF6ED] text-[#504932] border border-[#E8E2D5] text-xs font-bold rounded-xl cursor-pointer hover:bg-[#E8DFC9]"
+                >
+                  Import Recipe
+                </button>
+              </div>
             </div>
           ) : (
             recipes.map((r) => (
               <div
                 key={r.id}
-                onClick={() => viewRecipeDetails(r.id)}
-                className="bg-white border border-[#E8E2D5] rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className="bg-white border border-[#E8E2D5] rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group"
               >
-                {/* Image Header */}
-                <div className="h-44 bg-[#FAF6ED] relative overflow-hidden">
+                {/* Recipe Card Image */}
+                <div className="relative h-44 w-full bg-[#FAF6ED] overflow-hidden border-b border-[#E8E2D5]">
                   {r.imageUrl ? (
                     <img
                       src={r.imageUrl}
@@ -680,84 +856,79 @@ export default function RecipesPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-[#9C937E] gap-1">
-                      <ChefHat className="w-8 h-8 opacity-40" />
-                      <span className="text-xs font-semibold">No Image</span>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-[#9C937E]">
+                      <ChefHat className="w-10 h-10 stroke-1 mb-1" />
+                      <span className="text-[11px] font-semibold">No Image</span>
                     </div>
                   )}
 
+                  {/* Dietary badge */}
                   <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                    <span className="px-2.5 py-0.5 rounded-lg bg-black/75 backdrop-blur-xs text-[10px] font-extrabold text-white uppercase tracking-wider">
-                      {r.cuisine}
-                    </span>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold border ${getDietaryBadge(
-                        r.dietaryType
-                      )}`}
-                    >
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] border shadow-xs ${getDietaryBadge(r.dietaryType)}`}>
                       {r.dietaryType}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-white/95 text-[#504932] border border-[#E8E2D5] shadow-xs">
+                      {r.cuisine}
                     </span>
                   </div>
 
+                  {/* Source indicator */}
                   {r.source === "THEMEALDB" && (
-                    <div className="absolute bottom-3 left-3">
-                      <span className="px-2 py-0.5 rounded-md bg-[#FAF6ED]/90 backdrop-blur-xs text-[10px] font-bold text-[#504932] border border-[#E8E2D5] flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-[#B34E22]" />
-                        TheMealDB
-                      </span>
+                    <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md text-[9px] font-bold bg-[#FAF6ED]/95 text-[#B34E22] border border-[#E8E2D5] shadow-xs">
+                      TheMealDB
                     </div>
                   )}
                 </div>
 
-                {/* Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                {/* Card Content */}
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                   <div>
                     <h3 className="font-extrabold text-sm text-[#504932] line-clamp-1 group-hover:text-[#B34E22] transition-colors">
                       {r.title}
                     </h3>
-                    <p className="text-xs text-[#7A7056] mt-1 line-clamp-2">
-                      {r.description || "Fresh ingredients mapped for automatic grocery bundling."}
-                    </p>
+                    {r.description && (
+                      <p className="text-xs text-[#7A7056] line-clamp-2 mt-1">
+                        {r.description.replace(/\[.*?\]/g, "")}
+                      </p>
+                    )}
                   </div>
 
-                  {/* Metadata Row */}
-                  <div className="pt-2 border-t border-[#F0EAE1] grid grid-cols-3 gap-2 text-[11px] text-[#7A7056]">
-                    <div className="flex items-center gap-1.5">
+                  {/* Meta Stats */}
+                  <div className="grid grid-cols-3 gap-2 py-2 border-y border-[#FAF6ED] text-[11px] text-[#7A7056]">
+                    <div className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-[#B34E22]" />
-                      <span className="font-semibold">{r.prepTimeMinutes + r.cookTimeMinutes}m</span>
+                      <span>{r.prepTimeMinutes + r.cookTimeMinutes}m</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-[#6A6332]" />
-                      <span className="font-semibold">{r.servings} Servings</span>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-[#B34E22]" />
+                      <span>{r.servings} serving{r.servings > 1 ? "s" : ""}</span>
                     </div>
-                    <div className="text-right font-extrabold text-[#504932]">
-                      {r._count?.ingredients || r.ingredients?.length || 0} items
+                    <div className="flex items-center gap-1">
+                      <Layers className="w-3.5 h-3.5 text-[#B34E22]" />
+                      <span>{r._count?.ingredients || 0} items</span>
                     </div>
                   </div>
 
-                  {/* Quick Actions */}
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAF6ED] text-[#504932] border border-[#E8E2D5]">
-                      {r.difficulty}
-                    </span>
-                    <div className="flex items-center gap-2">
+                  {/* Card Actions */}
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      onClick={() => viewRecipeDetails(r.id)}
+                      className="text-xs font-bold text-[#B34E22] hover:text-[#8F3E1A] flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>View Recipe</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+
+                    <div className="flex items-center gap-1.5">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(r);
-                        }}
-                        style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#E8E2D5" }}
+                        onClick={() => openEditModal(r)}
                         className="p-1.5 rounded-lg bg-[#FAF6ED] hover:bg-[#EBD3AA] text-[#504932] border border-[#E8E2D5] transition-all cursor-pointer"
                         title="Edit Recipe"
                       >
-                        <Pencil className="w-3.5 h-3.5 text-[#504932]" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDeleteModal(r);
-                        }}
-                        style={{ color: "#B34E22", backgroundColor: "#FFF7ED", borderColor: "#FDBA74" }}
+                        onClick={() => openDeleteModal(r)}
                         className="p-1.5 rounded-lg bg-[#FFF7ED] hover:bg-red-100 text-[#B34E22] border border-[#FDBA74] transition-all cursor-pointer"
                         title="Delete Recipe"
                       >
@@ -771,339 +942,129 @@ export default function RecipesPage() {
           )}
         </div>
 
-        {/* RECIPE DETAILS SLIDE-OVER DRAWER */}
+        {/* DETAIL DRAWER / MODAL */}
         {selectedRecipe && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-            <div className="flex-1" onClick={closeRecipeDetails} />
-
-            <div className="w-full max-w-2xl bg-[#FFFCF5] border-l border-[#E8E2D5] h-full flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-right duration-200">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="w-full max-w-2xl bg-white border border-[#E8E2D5] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
               {/* Drawer Header */}
-              <div className="px-6 py-4 bg-white border-b border-[#E8E2D5] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ChefHat className="w-5 h-5 text-[#B34E22]" />
-                  <div>
-                    <h3 className="font-extrabold text-base text-[#504932]">{selectedRecipe.title}</h3>
-                    <p className="text-xs text-[#7A7056]">
-                      {selectedRecipe.cuisine} Cuisine • {selectedRecipe.servings} Base Servings •{" "}
-                      {selectedRecipe.dietaryType}
-                    </p>
+              <div className="relative h-44 bg-[#FAF6ED] border-b border-[#E8E2D5] shrink-0">
+                {selectedRecipe.imageUrl ? (
+                  <img
+                    src={selectedRecipe.imageUrl}
+                    alt={selectedRecipe.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[#9C937E]">
+                    <ChefHat className="w-12 h-12 stroke-1" />
                   </div>
-                </div>
+                )}
                 <button
                   onClick={closeRecipeDetails}
-                  style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#E8E2D5" }}
-                  className="p-2 rounded-xl text-[#504932] hover:bg-[#EBD3AA] border border-[#E8E2D5] transition-colors cursor-pointer"
-                  title="Close Drawer"
-                >
-                  <X className="w-4 h-4 text-[#504932]" />
-                </button>
-              </div>
-
-              {/* Drawer Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {isLoadingRecipeDetails && (
-                  <div className="py-12 flex flex-col items-center justify-center text-[#7A7056] gap-2">
-                    <RefreshCw className="w-6 h-6 text-[#B34E22] animate-spin" />
-                    <p className="text-xs font-semibold">Fetching recipe ingredients & grocery mappings...</p>
-                  </div>
-                )}
-
-                {/* Hero Snapshot */}
-                {selectedRecipe.imageUrl && (
-                  <div className="h-56 rounded-2xl overflow-hidden border border-[#E8E2D5] shadow-xs">
-                    <img
-                      src={selectedRecipe.imageUrl}
-                      alt={selectedRecipe.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
-                {/* Key Metrics */}
-                <div className="grid grid-cols-4 gap-3 text-center">
-                  <div className="p-3 bg-white border border-[#E8E2D5] rounded-2xl shadow-xs">
-                    <span className="text-[10px] uppercase font-bold text-[#7A7056]">Prep Time</span>
-                    <p className="text-sm font-extrabold text-[#504932] mt-0.5">
-                      {selectedRecipe.prepTimeMinutes}m
-                    </p>
-                  </div>
-                  <div className="p-3 bg-white border border-[#E8E2D5] rounded-2xl shadow-xs">
-                    <span className="text-[10px] uppercase font-bold text-[#7A7056]">Cook Time</span>
-                    <p className="text-sm font-extrabold text-[#504932] mt-0.5">
-                      {selectedRecipe.cookTimeMinutes}m
-                    </p>
-                  </div>
-                  <div className="p-3 bg-white border border-[#E8E2D5] rounded-2xl shadow-xs">
-                    <span className="text-[10px] uppercase font-bold text-[#7A7056]">Servings</span>
-                    <p className="text-sm font-extrabold text-[#B34E22] mt-0.5">
-                      {selectedRecipe.servings}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-white border border-[#E8E2D5] rounded-2xl shadow-xs">
-                    <span className="text-[10px] uppercase font-bold text-[#7A7056]">Difficulty</span>
-                    <p className="text-sm font-extrabold text-[#6A6332] mt-0.5">
-                      {selectedRecipe.difficulty}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Instructions */}
-                <div className="p-4 bg-white border border-[#E8E2D5] rounded-2xl shadow-xs space-y-2">
-                  <h4 className="text-xs font-bold text-[#7A7056] uppercase tracking-wider flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-[#B34E22]" />
-                    <span>Cooking Instructions</span>
-                  </h4>
-                  <div className="text-xs text-[#504932] whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto pr-1">
-                    {selectedRecipe.instructions}
-                  </div>
-                </div>
-
-                {/* Ingredients Table */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#7A7056] uppercase tracking-wider flex items-center gap-1.5">
-                      <Package className="w-3.5 h-3.5 text-[#B34E22]" />
-                      <span>
-                        Recipe Ingredients ({selectedRecipe.ingredients?.length || 0})
-                      </span>
-                    </h4>
-                    <span className="text-[11px] text-[#7A7056]">
-                      Mapped to Ingrezy Catalog Products
-                    </span>
-                  </div>
-
-                  <div className="rounded-2xl border border-[#E8E2D5] overflow-hidden bg-white shadow-xs">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-[#FAF6ED] text-[#504932] text-xs uppercase font-bold border-b border-[#E8E2D5]">
-                        <tr>
-                          <th className="py-2.5 px-3">Ingredient / Product</th>
-                          <th className="py-2.5 px-3 text-center">Quantity</th>
-                          <th className="py-2.5 px-3 text-center">Type</th>
-                          <th className="py-2.5 px-3 text-right">Catalog Match</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#F0EAE1] text-[#504932]">
-                        {selectedRecipe.ingredients && selectedRecipe.ingredients.length > 0 ? (
-                          selectedRecipe.ingredients.map((ing, idx) => (
-                            <tr key={ing.id || idx} className="hover:bg-[#FAF6ED]/50 transition-colors">
-                              <td className="py-2.5 px-3">
-                                <div className="font-bold text-[#504932] text-xs">
-                                  {ing.product?.name || ing.ingredientName || "Unnamed Ingredient"}
-                                </div>
-                                {ing.notes && (
-                                  <div className="text-[10px] text-[#7A7056]">{ing.notes}</div>
-                                )}
-                              </td>
-                              <td className="py-2.5 px-3 text-center font-semibold text-[#504932]">
-                                {ing.quantity} {ing.unit}
-                              </td>
-                              <td className="py-2.5 px-3 text-center">
-                                <span
-                                  className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                    ing.isMandatory
-                                      ? "bg-amber-50 text-amber-900 border border-amber-200"
-                                      : "bg-stone-50 text-stone-600 border border-stone-200"
-                                  }`}
-                                >
-                                  {ing.isMandatory ? "Mandatory" : "Optional"}
-                                </span>
-                              </td>
-                              <td className="py-2.5 px-3 text-right">
-                                {ing.product ? (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                    <span>₹{Number(ing.product.basePrice).toFixed(0)}</span>
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                                    Unmapped
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={4} className="py-6 text-center text-[#7A7056] italic">
-                              No ingredients listed for this recipe.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              {/* Drawer Footer with Actions */}
-              <div className="px-6 py-4 bg-white border-t border-[#E8E2D5] flex items-center justify-between">
-                <button
-                  onClick={() => openDeleteModal(selectedRecipe)}
-                  style={{ color: "#B34E22", backgroundColor: "#FFF7ED", borderColor: "#FDBA74" }}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-[#FFF7ED] hover:bg-red-100 text-[#B34E22] text-xs font-bold rounded-xl border border-[#FDBA74] transition-all cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-red-600" />
-                  <span>Delete</span>
-                </button>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={closeRecipeDetails}
-                    style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
-                    className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] font-extrabold rounded-xl text-xs border-2 border-[#C8BEA7] transition-all cursor-pointer shadow-xs"
-                  >
-                    <span style={{ color: "#504932" }} className="font-extrabold">Close</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      openEditModal(selectedRecipe);
-                    }}
-                    style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
-                    className="flex items-center gap-1.5 px-5 py-2 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-white" />
-                    <span style={{ color: "#ffffff" }} className="font-bold">Edit Recipe</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* THEMEALDB IMPORT MODAL */}
-        {isImportModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-            <div className="w-full max-w-lg bg-white border border-[#E8E2D5] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
-              {/* Header */}
-              <div className="px-6 py-4 bg-[#FAF6ED] border-b border-[#E8E2D5] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <DownloadCloud className="w-5 h-5 text-[#B34E22]" />
-                  <div>
-                    <h3 className="text-sm font-bold text-[#504932]">Import from TheMealDB</h3>
-                    <p className="text-[11px] text-[#7A7056]">
-                      Ingest curated recipes with automatic catalog ingredient matching
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={closeImportModal}
-                  style={{ color: "#504932" }}
-                  className="p-1.5 rounded-lg text-[#7A7056] hover:text-[#504932] hover:bg-[#EBD3AA]/40 transition-colors cursor-pointer"
+                  className="absolute top-3 right-3 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
+                <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] border shadow-xs ${getDietaryBadge(selectedRecipe.dietaryType)}`}>
+                    {selectedRecipe.dietaryType}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-white text-[#504932] border border-[#E8E2D5] shadow-xs">
+                    {selectedRecipe.cuisine}
+                  </span>
+                </div>
               </div>
 
-              {/* Body */}
-              <div className="p-6 space-y-4">
-                {importError && (
-                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-                    <span>{importError}</span>
-                  </div>
-                )}
+              {/* Drawer Body */}
+              <div className="p-6 overflow-y-auto space-y-4">
+                <div>
+                  <h3 className="text-base font-extrabold text-[#504932]">{selectedRecipe.title}</h3>
+                  {selectedRecipe.description && (
+                    <p className="text-xs text-[#7A7056] mt-1 whitespace-pre-line">
+                      {selectedRecipe.description}
+                    </p>
+                  )}
+                </div>
 
-                {importResult && (
-                  <div
-                    className={`p-3.5 rounded-xl text-xs space-y-1.5 border ${
-                      importResult.isAlreadyImported
-                        ? "bg-amber-50 border-amber-200 text-amber-900"
-                        : "bg-emerald-50 border-emerald-200 text-emerald-800"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 font-bold">
-                      {importResult.isAlreadyImported ? (
-                        <Info className="w-4 h-4 text-amber-600" />
-                      ) : (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      )}
-                      <span>
-                        {importResult.isAlreadyImported
-                          ? "Recipe Already Exists in Database"
-                          : "Recipe Successfully Imported!"}
-                      </span>
-                    </div>
-                    {importResult.stats && (
-                      <p className="text-[11px]">
-                        Extracted {importResult.stats.totalIngredients} ingredients (
-                        {importResult.stats.matchedCount} mapped to Ingrezy catalog products,{" "}
-                        {importResult.stats.unmatchedCount} unmapped).
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <form onSubmit={(e) => handleImportMealDb(e)} className="space-y-3">
+                <div className="grid grid-cols-3 gap-3 p-3 bg-[#FAF6ED] rounded-2xl border border-[#E8E2D5] text-xs">
                   <div>
-                    <label className="block text-xs font-bold text-[#504932] mb-1">
-                      TheMealDB Meal ID <span className="text-[#B34E22]">*</span>
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={mealDbIdInput}
-                        onChange={(e) => setMealDbIdInput(e.target.value)}
-                        placeholder="e.g. 52771"
-                        className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isImporting || !mealDbIdInput.trim()}
-                        style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
-                        className="flex items-center gap-1.5 px-5 py-2 bg-[#B34E22] hover:bg-[#8F3E1A] disabled:opacity-50 text-white font-bold rounded-xl text-xs shadow-sm cursor-pointer"
-                      >
-                        {isImporting && <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />}
-                        <span style={{ color: "#ffffff" }} className="font-bold">
-                          {isImporting ? "Importing..." : "Import"}
-                        </span>
-                      </button>
-                    </div>
+                    <span className="text-[10px] font-bold text-[#7A7056] uppercase block">Prep Time</span>
+                    <span className="font-extrabold text-[#504932]">{selectedRecipe.prepTimeMinutes} mins</span>
                   </div>
-                </form>
+                  <div>
+                    <span className="text-[10px] font-bold text-[#7A7056] uppercase block">Cook Time</span>
+                    <span className="font-extrabold text-[#504932]">{selectedRecipe.cookTimeMinutes} mins</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-[#7A7056] uppercase block">Servings</span>
+                    <span className="font-extrabold text-[#504932]">{selectedRecipe.servings} people</span>
+                  </div>
+                </div>
 
-                {/* Popular MealDB Suggestions */}
-                <div className="pt-2">
-                  <span className="block text-xs font-bold text-[#7A7056] mb-2 uppercase tracking-wider">
-                    Quick Import Popular Dishes:
-                  </span>
+                {/* Ingredients List */}
+                <div>
+                  <h4 className="text-xs font-bold text-[#504932] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Package className="w-3.5 h-3.5 text-[#B34E22]" />
+                    <span>Ingredients ({selectedRecipe.ingredients?.length || 0})</span>
+                  </h4>
+
                   <div className="space-y-1.5">
-                    {POPULAR_MEALDB_SUGGESTIONS.map((item) => (
+                    {selectedRecipe.ingredients?.map((ing, idx) => (
                       <div
-                        key={item.id}
-                        className="flex items-center justify-between p-2.5 bg-[#FAF6ED] rounded-xl border border-[#E8E2D5] hover:border-[#B34E22] transition-colors"
+                        key={idx}
+                        className="flex items-center justify-between p-2.5 bg-[#FAF6ED]/70 rounded-xl border border-[#E8E2D5] text-xs"
                       >
-                        <div className="text-xs">
-                          <span className="font-bold text-[#504932]">{item.name}</span>
-                          <span className="text-[10px] text-[#7A7056] font-mono ml-2">
-                            ID: {item.id}
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[#504932]">
+                            {ing.ingredientName || ing.product?.name || "Ingredient"}
                           </span>
+                          {ing.product && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                              Mapped: {ing.product.name}
+                            </span>
+                          )}
+                          {!ing.product && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                              Unmapped Catalog
+                            </span>
+                          )}
                         </div>
-                        <button
-                          type="button"
-                          disabled={isImporting}
-                          onClick={() => {
-                            setMealDbIdInput(item.id);
-                            handleImportMealDb(undefined, item.id);
-                          }}
-                          style={{ color: "#B34E22", backgroundColor: "#FFFFFF", borderColor: "#E8E2D5" }}
-                          className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-[#E8E2D5] hover:bg-[#B34E22] hover:text-white transition-all cursor-pointer"
-                        >
-                          Import
-                        </button>
+                        <span className="font-mono font-extrabold text-[#B34E22]">
+                          {ing.quantity} {ing.unit}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-3 border-t border-[#E8E2D5]">
+                {/* Instructions */}
+                <div>
+                  <h4 className="text-xs font-bold text-[#504932] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-[#B34E22]" />
+                    <span>Cooking Instructions</span>
+                  </h4>
+                  <div className="p-4 bg-[#FAF6ED] rounded-2xl border border-[#E8E2D5] text-xs text-[#504932] leading-relaxed whitespace-pre-line font-medium">
+                    {selectedRecipe.instructions}
+                  </div>
+                </div>
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="p-4 bg-[#FAF6ED] border-t border-[#E8E2D5] flex items-center justify-between shrink-0">
+                <span className="text-[11px] text-[#7A7056]">
+                  Slug: <code className="font-mono">{selectedRecipe.slug}</code>
+                </span>
+                <div className="flex items-center gap-2">
                   <button
-                    type="button"
-                    onClick={closeImportModal}
-                    style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
-                    className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] font-extrabold rounded-xl text-xs border-2 border-[#C8BEA7] transition-all cursor-pointer shadow-xs"
+                    onClick={() => {
+                      const r = selectedRecipe;
+                      closeRecipeDetails();
+                      openEditModal(r);
+                    }}
+                    style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
+                    className="px-4 py-2 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
                   >
-                    <span style={{ color: "#504932" }} className="font-extrabold">Done</span>
+                    Edit Recipe
                   </button>
                 </div>
               </div>
@@ -1114,19 +1075,17 @@ export default function RecipesPage() {
         {/* CREATE / EDIT RECIPE MODAL */}
         {isFormModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-            <div className="w-full max-w-3xl bg-white border border-[#E8E2D5] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+            <div className="w-full max-w-3xl bg-white border border-[#E8E2D5] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150 max-h-[90vh]">
               {/* Modal Header */}
               <div className="px-6 py-4 bg-[#FAF6ED] border-b border-[#E8E2D5] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ChefHat className="w-5 h-5 text-[#B34E22]" />
                   <div>
                     <h3 className="text-sm font-bold text-[#504932]">
-                      {editingRecipe ? "Edit Recipe" : "Create New Smart Recipe"}
+                      {editingRecipe ? "Edit Recipe" : "Add New Recipe"}
                     </h3>
                     <p className="text-[11px] text-[#7A7056]">
-                      {editingRecipe
-                        ? `Editing #${editingRecipe.slug}`
-                        : "Configure cuisine, cooking instructions, servings, and mapped grocery items"}
+                      Recipe title, multi-lingual instructions, ingredients & grocery mapping
                     </p>
                   </div>
                 </div>
@@ -1140,7 +1099,7 @@ export default function RecipesPage() {
               </div>
 
               {/* Modal Form */}
-              <form onSubmit={handleSaveRecipe} className="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+              <form onSubmit={handleSaveRecipe} className="p-6 space-y-4 overflow-y-auto flex-1">
                 {formErrors.general && (
                   <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -1193,9 +1152,6 @@ export default function RecipesPage() {
                       onChange={(e) => setFormData({ ...formData, prepTimeMinutes: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
                     />
-                    {formErrors.prepTimeMinutes && (
-                      <p className="text-[10px] text-red-600 mt-1">{formErrors.prepTimeMinutes}</p>
-                    )}
                   </div>
 
                   <div>
@@ -1207,9 +1163,6 @@ export default function RecipesPage() {
                       onChange={(e) => setFormData({ ...formData, cookTimeMinutes: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
                     />
-                    {formErrors.cookTimeMinutes && (
-                      <p className="text-[10px] text-red-600 mt-1">{formErrors.cookTimeMinutes}</p>
-                    )}
                   </div>
 
                   <div>
@@ -1221,9 +1174,6 @@ export default function RecipesPage() {
                       onChange={(e) => setFormData({ ...formData, servings: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
                     />
-                    {formErrors.servings && (
-                      <p className="text-[10px] text-red-600 mt-1">{formErrors.servings}</p>
-                    )}
                   </div>
 
                   <div>
@@ -1254,46 +1204,155 @@ export default function RecipesPage() {
                   </div>
                 </div>
 
-                {/* Image URL & Description */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#504932] mb-1">Image URL</label>
-                    <input
-                      type="url"
-                      value={formData.imageUrl}
-                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                      placeholder="https://images.unsplash.com/..."
-                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
-                    />
-                    {formErrors.imageUrl && (
-                      <p className="text-[11px] text-red-600 mt-1 font-semibold">{formErrors.imageUrl}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#504932] mb-1">Short Description</label>
-                    <input
-                      type="text"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Rich, velvety tomato gravy with paneer cubes"
-                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
-                    />
-                  </div>
-                </div>
-
-                {/* Instructions */}
+                {/* Image URL */}
                 <div>
-                  <label className="block text-xs font-bold text-[#504932] mb-1">
-                    Cooking Instructions <span className="text-[#B34E22]">* (min 10 characters)</span>
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formData.instructions}
-                    onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                    placeholder="Step-by-step preparation instructions..."
+                  <label className="block text-xs font-bold text-[#504932] mb-1">Recipe Image URL</label>
+                  <input
+                    type="url"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/..."
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
                   />
+                  {formErrors.imageUrl && (
+                    <p className="text-[11px] text-red-600 mt-1 font-semibold">{formErrors.imageUrl}</p>
+                  )}
+                </div>
+
+                {/* Multilingual Tabs: English, Marathi, Hindi */}
+                <div className="pt-2 border-t border-[#E8E2D5]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-[#504932] flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-[#B34E22]" />
+                      <span>Multi-Lingual Content (Instructions & Description)</span>
+                    </span>
+
+                    {/* Language Switcher Tabs */}
+                    <div className="inline-flex rounded-xl bg-[#FAF6ED] p-1 border border-[#E8E2D5]">
+                      <button
+                        type="button"
+                        onClick={() => setActiveLangTab("en")}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          activeLangTab === "en"
+                            ? "bg-[#B34E22] text-white shadow-xs"
+                            : "text-[#504932] hover:bg-white"
+                        }`}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveLangTab("mr")}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          activeLangTab === "mr"
+                            ? "bg-[#B34E22] text-white shadow-xs"
+                            : "text-[#504932] hover:bg-white"
+                        }`}
+                      >
+                        मराठी (Marathi)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveLangTab("hi")}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          activeLangTab === "hi"
+                            ? "bg-[#B34E22] text-white shadow-xs"
+                            : "text-[#504932] hover:bg-white"
+                        }`}
+                      >
+                        हिंदी (Hindi)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Active Language Fields */}
+                  {activeLangTab === "en" && (
+                    <div className="space-y-3 p-3 bg-[#FAF6ED]/50 rounded-2xl border border-[#E8E2D5]">
+                      <div>
+                        <label className="block text-xs font-bold text-[#504932] mb-1">
+                          English Description
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.descriptionEn}
+                          onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+                          placeholder="Short summary in English..."
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#504932] mb-1">
+                          English Cooking Instructions <span className="text-[#B34E22]">*</span>
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={formData.instructionsEn}
+                          onChange={(e) => setFormData({ ...formData, instructionsEn: e.target.value })}
+                          placeholder="1. Heat oil in a pan...\n2. Add diced onions and saute until golden..."
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {activeLangTab === "mr" && (
+                    <div className="space-y-3 p-3 bg-[#FAF6ED]/50 rounded-2xl border border-[#E8E2D5]">
+                      <div>
+                        <label className="block text-xs font-bold text-[#504932] mb-1">
+                          मराठी वर्णन (Marathi Description)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.descriptionMr}
+                          onChange={(e) => setFormData({ ...formData, descriptionMr: e.target.value })}
+                          placeholder="मराठीत रेसिपीचा थोडक्यात सारांश..."
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#504932] mb-1">
+                          मराठी कृती (Marathi Instructions)
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={formData.instructionsMr}
+                          onChange={(e) => setFormData({ ...formData, instructionsMr: e.target.value })}
+                          placeholder="१. कढईत तेल गरम करा...\n२. कांदा घालून सोनेरी रंगावर परता..."
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {activeLangTab === "hi" && (
+                    <div className="space-y-3 p-3 bg-[#FAF6ED]/50 rounded-2xl border border-[#E8E2D5]">
+                      <div>
+                        <label className="block text-xs font-bold text-[#504932] mb-1">
+                          हिंदी विवरण (Hindi Description)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.descriptionHi}
+                          onChange={(e) => setFormData({ ...formData, descriptionHi: e.target.value })}
+                          placeholder="हिंदी में संक्षेप विवरण..."
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#504932] mb-1">
+                          हिंदी विधि (Hindi Instructions)
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={formData.instructionsHi}
+                          onChange={(e) => setFormData({ ...formData, instructionsHi: e.target.value })}
+                          placeholder="१. एक पैन में तेल गरम करें...\n२. कटा हुआ प्याज डालें और सुनहरा होने तक भूनें..."
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {formErrors.instructions && (
                     <p className="text-[11px] text-red-600 mt-1 font-semibold">{formErrors.instructions}</p>
                   )}
@@ -1308,7 +1367,7 @@ export default function RecipesPage() {
                         <span>Recipe Ingredients ({formData.ingredients.length})</span>
                       </h4>
                       <p className="text-[11px] text-[#7A7056]">
-                        Link items to catalog products for 1-click grocery cart bundling
+                        Specify ingredient name, quantity, unit, and optional catalog product mapping
                       </p>
                     </div>
 
@@ -1316,10 +1375,10 @@ export default function RecipesPage() {
                       type="button"
                       onClick={addIngredientRow}
                       style={{ color: "#B34E22", backgroundColor: "#FFF7ED", borderColor: "#FDBA74" }}
-                      className="flex items-center gap-1 px-3 py-1 bg-[#FFF7ED] hover:bg-[#B34E22] hover:text-white text-[#B34E22] text-xs font-bold rounded-xl border border-[#FDBA74] transition-all cursor-pointer"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#FFF7ED] hover:bg-[#B34E22] hover:text-white text-[#B34E22] text-xs font-bold rounded-xl border border-[#FDBA74] transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Add Ingredient</span>
+                      <span>Add Ingredient Row</span>
                     </button>
                   </div>
 
@@ -1327,84 +1386,92 @@ export default function RecipesPage() {
                     <p className="text-[11px] text-red-600 font-semibold">{formErrors.ingredients}</p>
                   )}
 
-                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                     {formData.ingredients.map((row, idx) => (
                       <div
                         key={idx}
-                        className="p-3 bg-[#FAF6ED] rounded-xl border border-[#E8E2D5] grid grid-cols-12 gap-2 items-center text-xs"
+                        className="p-3 bg-[#FAF6ED] rounded-xl border border-[#E8E2D5] space-y-2 text-xs"
                       >
-                        {/* Product Picker */}
-                        <div className="col-span-5">
-                          <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
-                            Catalog Product
-                          </label>
-                          <select
-                            value={row.productId}
-                            onChange={(e) => updateIngredientRow(idx, "productId", e.target.value)}
-                            className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
-                          >
-                            <option value="">-- Select Product --</option>
-                            {catalogProducts.map((cp) => (
-                              <option key={cp.id} value={cp.id}>
-                                {cp.name} ({cp.unit} • ₹{Number(cp.basePrice).toFixed(0)})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                          {/* Ingredient Name */}
+                          <div className="sm:col-span-4">
+                            <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
+                              Ingredient Name <span className="text-[#B34E22]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={row.ingredientName}
+                              onChange={(e) => updateIngredientRow(idx, "ingredientName", e.target.value)}
+                              placeholder="e.g. Red Onions or Cumin"
+                              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white text-[#504932] focus:outline-none focus:border-[#B34E22]"
+                            />
+                            {formErrors[`ing_${idx}_name`] && (
+                              <p className="text-[10px] text-red-600 mt-0.5 font-semibold">
+                                {formErrors[`ing_${idx}_name`]}
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Quantity */}
-                        <div className="col-span-2">
-                          <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
-                            Quantity
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            value={row.quantity}
-                            onChange={(e) => updateIngredientRow(idx, "quantity", e.target.value)}
-                            className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
-                          />
-                        </div>
+                          {/* Quantity */}
+                          <div className="sm:col-span-2">
+                            <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
+                              Quantity <span className="text-[#B34E22]">*</span>
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              value={row.quantity}
+                              onChange={(e) => updateIngredientRow(idx, "quantity", e.target.value)}
+                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white text-[#504932] focus:outline-none focus:border-[#B34E22]"
+                            />
+                          </div>
 
-                        {/* Unit */}
-                        <div className="col-span-2">
-                          <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
-                            Unit
-                          </label>
-                          <input
-                            type="text"
-                            value={row.unit}
-                            onChange={(e) => updateIngredientRow(idx, "unit", e.target.value)}
-                            placeholder="g / ml / piece"
-                            className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white focus:outline-none focus:border-[#B34E22]"
-                          />
-                        </div>
+                          {/* Unit */}
+                          <div className="sm:col-span-2">
+                            <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
+                              Unit <span className="text-[#B34E22]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={row.unit}
+                              onChange={(e) => updateIngredientRow(idx, "unit", e.target.value)}
+                              placeholder="g, ml, piece, tsp"
+                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white text-[#504932] focus:outline-none focus:border-[#B34E22]"
+                            />
+                          </div>
 
-                        {/* Mandatory Checkbox */}
-                        <div className="col-span-2 flex flex-col items-center justify-center">
-                          <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
-                            Mandatory
-                          </label>
-                          <input
-                            type="checkbox"
-                            checked={row.isMandatory}
-                            onChange={(e) => updateIngredientRow(idx, "isMandatory", e.target.checked)}
-                            className="w-4 h-4 rounded border-[#E8E2D5] text-[#B34E22] focus:ring-0"
-                          />
-                        </div>
+                          {/* Grocery Catalog Mapping */}
+                          <div className="sm:col-span-3">
+                            <label className="text-[10px] font-bold text-[#7A7056] block mb-0.5">
+                              Map to Grocery Item (Optional)
+                            </label>
+                            <select
+                              value={row.productId}
+                              onChange={(e) => updateIngredientRow(idx, "productId", e.target.value)}
+                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#E8E2D5] bg-white text-[#504932] focus:outline-none focus:border-[#B34E22] cursor-pointer"
+                            >
+                              <option value="">-- No Catalog Mapping --</option>
+                              {catalogProducts.map((cp) => (
+                                <option key={cp.id} value={cp.id}>
+                                  {cp.name} ({cp.unit} • ₹{Number(cp.basePrice).toFixed(0)})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
-                        {/* Remove */}
-                        <div className="col-span-1 flex items-end justify-center pt-3">
-                          <button
-                            type="button"
-                            onClick={() => removeIngredientRow(idx)}
-                            disabled={formData.ingredients.length <= 1}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-30 cursor-pointer"
-                            title="Remove Ingredient"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {/* Remove button */}
+                          <div className="sm:col-span-1 flex items-center justify-center pt-3">
+                            <button
+                              type="button"
+                              onClick={() => removeIngredientRow(idx)}
+                              disabled={formData.ingredients.length <= 1}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-30 cursor-pointer"
+                              title="Remove Ingredient"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1424,15 +1491,14 @@ export default function RecipesPage() {
                   </span>
                 </label>
 
-                {/* Actions */}
+                {/* Form Footer */}
                 <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E2D5]">
                   <button
                     type="button"
                     onClick={closeFormModal}
-                    style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
-                    className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] font-extrabold rounded-xl text-xs border-2 border-[#C8BEA7] transition-all cursor-pointer shadow-xs"
+                    className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] font-extrabold rounded-xl text-xs border border-[#E8E2D5] transition-all cursor-pointer shadow-xs"
                   >
-                    <span style={{ color: "#504932" }} className="font-extrabold">Cancel</span>
+                    Cancel
                   </button>
                   <button
                     type="submit"
@@ -1441,12 +1507,231 @@ export default function RecipesPage() {
                     className="flex items-center gap-2 px-6 py-2.5 bg-[#B34E22] hover:bg-[#8F3E1A] disabled:opacity-50 text-white font-extrabold rounded-xl text-xs shadow-md shadow-[#B34E22]/25 transition-all cursor-pointer"
                   >
                     {isSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />}
-                    <span style={{ color: "#ffffff" }} className="text-white font-extrabold">
-                      {isSaving ? "Saving..." : editingRecipe ? "Save Changes" : "Create Recipe"}
-                    </span>
+                    <span>{isSaving ? "Saving..." : editingRecipe ? "Save Changes" : "Create Recipe"}</span>
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* THEMEALDB IMPORT & SEARCH MODAL */}
+        {isImportModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="w-full max-w-2xl bg-white border border-[#E8E2D5] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150 max-h-[90vh]">
+              {/* Header */}
+              <div className="px-6 py-4 bg-[#FAF6ED] border-b border-[#E8E2D5] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DownloadCloud className="w-5 h-5 text-[#B34E22]" />
+                  <div>
+                    <h3 className="text-sm font-bold text-[#504932]">TheMealDB Recipe Importer</h3>
+                    <p className="text-[11px] text-[#7A7056]">
+                      Search global recipes, preview ingredients, and import into Ingrezy PostgreSQL catalog
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeImportModal}
+                  style={{ color: "#504932" }}
+                  className="p-1.5 rounded-lg text-[#7A7056] hover:text-[#504932] hover:bg-[#EBD3AA]/40 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-4 flex-1">
+                {importError && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>{importError}</span>
+                  </div>
+                )}
+
+                {importResult && (
+                  <div
+                    className={`p-3.5 rounded-xl text-xs space-y-1.5 border ${
+                      importResult.isAlreadyImported
+                        ? "bg-amber-50 border-amber-200 text-amber-900"
+                        : "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 font-bold">
+                      {importResult.isAlreadyImported ? (
+                        <Info className="w-4 h-4 text-amber-600" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      )}
+                      <span>
+                        {importResult.isAlreadyImported
+                          ? "Recipe Already Exists in Database (Idempotent)"
+                          : "Recipe Successfully Imported to Ingrezy Database!"}
+                      </span>
+                    </div>
+                    {importResult.stats && (
+                      <p className="text-[11px]">
+                        Processed {importResult.stats.totalIngredients} ingredients (
+                        {importResult.stats.matchedCount} mapped to existing catalog products,{" "}
+                        {importResult.stats.unmatchedCount} safely preserved as custom ingredients).
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Live Search Form */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-[#504932]">
+                    Search Recipes by Name or Ingredient:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={mealDbSearchQuery}
+                        onChange={(e) => setMealDbSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearchMealDb()}
+                        placeholder="e.g. Chicken, Paneer, Penne, Lentil, Curry..."
+                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
+                      />
+                      <Search className="w-3.5 h-3.5 text-[#9C937E] absolute left-3 top-3" />
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isSearchingMealDb || !mealDbSearchQuery.trim()}
+                      onClick={() => handleSearchMealDb()}
+                      style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
+                      className="px-4 py-2 bg-[#B34E22] hover:bg-[#8F3E1A] disabled:opacity-50 text-white font-bold rounded-xl text-xs shadow-sm cursor-pointer flex items-center gap-1.5"
+                    >
+                      {isSearchingMealDb && <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />}
+                      <span>{isSearchingMealDb ? "Searching..." : "Search"}</span>
+                    </button>
+                  </div>
+
+                  {/* Preset keyword pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-bold text-[#7A7056] mr-1">Popular:</span>
+                    {POPULAR_SEARCH_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setMealDbSearchQuery(preset);
+                          handleSearchMealDb(preset);
+                        }}
+                        className="px-2 py-0.5 text-[10px] rounded-lg border border-[#E8E2D5] bg-[#FAF6ED] text-[#504932] hover:bg-[#EBD3AA] transition-colors cursor-pointer"
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Search Results Display */}
+                {mealDbResults.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-[#E8E2D5]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#504932]">
+                        TheMealDB Search Results ({mealDbResults.length}):
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                      {mealDbResults.map((meal) => (
+                        <div
+                          key={meal.idMeal}
+                          className="p-3 bg-[#FAF6ED] rounded-2xl border border-[#E8E2D5] flex items-center justify-between gap-3 hover:border-[#B34E22] transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-white border border-[#E8E2D5] overflow-hidden shrink-0">
+                              {meal.imageUrl ? (
+                                <img
+                                  src={meal.imageUrl}
+                                  alt={meal.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <ChefHat className="w-6 h-6 text-[#9C937E] m-auto mt-3" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-xs text-[#504932]">{meal.title}</div>
+                              <div className="text-[10px] text-[#7A7056] flex items-center gap-2 mt-0.5">
+                                <span>{meal.cuisine} • {meal.category}</span>
+                                <span>•</span>
+                                <span>{meal.ingredientCount} ingredients</span>
+                              </div>
+                              {meal.ingredientsSample.length > 0 && (
+                                <div className="text-[10px] text-[#9C937E] mt-0.5 line-clamp-1">
+                                  Includes: {meal.ingredientsSample.join(", ")}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {meal.isAlreadyImported ? (
+                              <span className="px-2.5 py-1 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 rounded-lg border border-emerald-300 flex items-center gap-1">
+                                <Check className="w-3 h-3 text-emerald-700" />
+                                <span>Imported</span>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={isImporting}
+                                onClick={() => handleImportMealDb(meal.idMeal)}
+                                style={{ color: "#ffffff", backgroundColor: "#B34E22" }}
+                                className="px-3 py-1.5 text-xs font-bold bg-[#B34E22] hover:bg-[#8F3E1A] text-white rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1"
+                              >
+                                {isImporting ? (
+                                  <RefreshCw className="w-3 h-3 animate-spin text-white" />
+                                ) : (
+                                  <DownloadCloud className="w-3 h-3 text-white" />
+                                )}
+                                <span>Import</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Direct ID Import Option */}
+                <div className="pt-3 border-t border-[#E8E2D5]">
+                  <label className="block text-[11px] font-bold text-[#7A7056] mb-1">
+                    Or import directly by Meal ID:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={manualMealIdInput}
+                      onChange={(e) => setManualMealIdInput(e.target.value)}
+                      placeholder="e.g. 52771"
+                      className="w-40 px-3 py-1.5 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
+                    />
+                    <button
+                      type="button"
+                      disabled={isImporting || !manualMealIdInput.trim()}
+                      onClick={() => handleImportMealDb(manualMealIdInput)}
+                      className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] text-xs font-bold rounded-xl border border-[#E8E2D5] transition-colors cursor-pointer"
+                    >
+                      Import ID
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-[#FAF6ED] border-t border-[#E8E2D5] flex justify-end">
+                <button
+                  type="button"
+                  onClick={closeImportModal}
+                  className="px-5 py-2 text-xs font-bold border border-[#E8E2D5] rounded-xl text-[#504932] hover:bg-[#E8DFC9] cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1485,22 +1770,18 @@ export default function RecipesPage() {
                   <button
                     type="button"
                     onClick={closeDeleteModal}
-                    style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
-                    className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] font-extrabold rounded-xl text-xs border-2 border-[#C8BEA7] transition-all cursor-pointer shadow-xs"
+                    className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#E8DFC9] text-[#504932] font-extrabold rounded-xl text-xs border border-[#E8E2D5] transition-all cursor-pointer shadow-xs"
                   >
-                    <span style={{ color: "#504932" }} className="font-extrabold">Cancel</span>
+                    Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleDeleteRecipe}
                     disabled={isDeleting}
-                    style={{ color: "#ffffff", backgroundColor: "#DC2626" }}
                     className="flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-extrabold rounded-xl text-xs shadow-md shadow-red-600/25 transition-all cursor-pointer"
                   >
                     {isDeleting && <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />}
-                    <span style={{ color: "#ffffff" }} className="text-white font-extrabold">
-                      {isDeleting ? "Deleting..." : "Confirm Delete"}
-                    </span>
+                    <span>{isDeleting ? "Deleting..." : "Confirm Delete"}</span>
                   </button>
                 </div>
               </div>

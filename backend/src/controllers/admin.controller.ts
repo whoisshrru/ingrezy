@@ -421,10 +421,12 @@ export async function getAdminInventory(
   try {
     const storeId = typeof req.query.storeId === "string" ? req.query.storeId : undefined;
     const lowStockOnly = req.query.lowStock === "true";
+    const thresholdParam = typeof req.query.threshold === "string" ? parseInt(req.query.threshold, 10) : NaN;
+    const threshold = !isNaN(thresholdParam) && thresholdParam >= 0 ? thresholdParam : 10;
 
     const where: Prisma.InventoryWhereInput = {
       ...(storeId ? { storeId } : {}),
-      ...(lowStockOnly ? { stockQuantity: { lte: 10 } } : {}),
+      ...(lowStockOnly ? { stockQuantity: { lte: threshold } } : {}),
     };
 
     const inventories = await prisma.inventory.findMany({
@@ -446,6 +448,7 @@ export async function getAdminInventory(
       message: "Admin inventory retrieved successfully",
       data: {
         count: inventories.length,
+        threshold,
         inventories: inventories.map((inv) => ({
           id: inv.id,
           storeId: inv.storeId,
@@ -460,7 +463,7 @@ export async function getAdminInventory(
           storePrice: Number(inv.price),
           stockQuantity: inv.stockQuantity,
           isAvailable: inv.isAvailable,
-          isLowStock: inv.stockQuantity <= 10,
+          isLowStock: inv.stockQuantity <= threshold,
           updatedAt: inv.updatedAt,
         })),
       },
