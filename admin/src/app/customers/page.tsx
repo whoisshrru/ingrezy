@@ -54,11 +54,11 @@ export default function CustomersPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
-              <Users className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-extrabold text-[#504932] tracking-tight flex items-center gap-2">
+              <Users className="w-5 h-5 text-[#B34E22]" />
               <span>Customer Management</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#7A7056] mt-0.5">
               Registered customers, contact details, and lifetime order activity
             </p>
           </div>
@@ -70,76 +70,89 @@ export default function CustomersPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search name, phone, email..."
-                className="w-64 pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                style={{ color: "#504932", backgroundColor: "#FFFFFF", borderColor: "#E8E2D5" }}
+                className="w-64 pl-9 pr-3 py-2 bg-white border border-[#E8E2D5] rounded-xl text-xs text-[#504932] placeholder-[#9C937E] focus:outline-none focus:border-[#B34E22] shadow-xs"
               />
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-[#9C937E] absolute left-3 top-3" />
             </form>
             <button
               onClick={() => fetchCustomers(search)}
-              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700"
+              style={{ color: "#504932", backgroundColor: "#FFFFFF", borderColor: "#E8E2D5" }}
+              className="p-2.5 bg-white hover:bg-[#FAF6ED] text-[#504932] rounded-xl border border-[#E8E2D5] shadow-xs transition-colors cursor-pointer"
+              title="Refresh Customers"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#B34E22] ${isLoading ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 shadow-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
             <span>{error}</span>
           </div>
         )}
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-[#E8E2D5] rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800 font-bold">
+              <thead className="bg-[#FAF6ED] text-[#504932] uppercase tracking-wider text-[11px] border-b border-[#E8E2D5] font-bold">
                 <tr>
                   <th className="py-3 px-4">Customer Name</th>
                   <th className="py-3 px-4">Phone Number</th>
                   <th className="py-3 px-4">Email</th>
                   <th className="py-3 px-4">Total Orders</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Registered Date</th>
+                  <th className="py-3 px-4 text-right">Registered Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
+              <tbody className="divide-y divide-[#F0EAE1] text-[#504932]">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500">
-                      Loading customers...
+                    <td colSpan={6} className="py-12 text-center text-[#7A7056]">
+                      <RefreshCw className="w-5 h-5 text-[#B34E22] animate-spin mx-auto mb-2" />
+                      <span>Loading customers...</span>
                     </td>
                   </tr>
                 ) : customers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500">
-                      No customers found.
+                    <td colSpan={6} className="py-12 text-center text-[#7A7056]">
+                      <Users className="w-8 h-8 text-[#9C937E] mx-auto mb-2 opacity-50" />
+                      <p className="font-semibold text-sm">No customers found.</p>
+                      <p className="text-xs text-[#9C937E] mt-1">Customers who register on the mobile app will appear here.</p>
                     </td>
                   </tr>
                 ) : (
                   customers.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-4 font-bold text-white">{c.name}</td>
-                      <td className="py-3 px-4 font-mono text-emerald-400">{c.phoneNumber}</td>
-                      <td className="py-3 px-4 text-slate-400">{c.email || "—"}</td>
-                      <td className="py-3 px-4 font-semibold text-white">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
-                          <ShoppingBag className="w-3 h-3 text-emerald-400" />
+                    <tr key={c.id} className="hover:bg-[#FAF6ED]/50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-[#504932]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-[#EBD3AA] text-[#504932] flex items-center justify-center font-bold text-xs border border-[#E8E2D5]">
+                            {c.name.slice(0, 1).toUpperCase()}
+                          </div>
+                          <span>{c.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-[#504932]">{c.phoneNumber}</td>
+                      <td className="py-3 px-4 text-[#7A7056]">{c.email || "—"}</td>
+                      <td className="py-3 px-4 font-semibold text-[#504932]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#FAF6ED] text-[#504932] border border-[#E8E2D5] font-bold">
+                          <ShoppingBag className="w-3 h-3 text-[#B34E22]" />
                           {c._count.orders} orders
                         </span>
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                             c.isActive
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : "bg-red-500/10 text-red-400 border-red-500/20"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                              : "bg-red-50 text-red-800 border-red-300"
                           }`}
                         >
                           {c.isActive ? "ACTIVE" : "INACTIVE"}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-slate-400">
+                      <td className="py-3 px-4 text-right text-[#7A7056] font-medium">
                         {new Date(c.createdAt).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",

@@ -54,10 +54,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-950 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-[#FFFCF5] text-[#504932]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-[#B34E22] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium text-stone-400">Loading Ingrezy Admin...</p>
+          <p className="text-sm font-semibold text-[#504932]">Loading Ingrezy Admin...</p>
         </div>
       </div>
     );

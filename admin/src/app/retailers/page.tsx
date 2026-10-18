@@ -3,17 +3,7 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { apiClient } from "@/lib/api";
-import {
-  Store,
-  Search,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  AlertTriangle,
-  X,
-  ShieldAlert,
-  UserCheck,
-} from "lucide-react";
+import { Store, Search, RefreshCw, AlertCircle, CheckCircle2, X } from "lucide-react";
 
 interface RetailerUser {
   id: string;
@@ -23,7 +13,7 @@ interface RetailerUser {
   role: string;
   isActive: boolean;
   createdAt: string;
-  managedStore: {
+  managedStore?: {
     id: string;
     name: string;
     city: string;
@@ -34,15 +24,15 @@ export default function RetailersPage() {
   const [retailers, setRetailers] = useState<RetailerUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  // Safeguard Confirmation Modal state
+  // Modal State for Action Confirmation
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     retailer: RetailerUser | null;
-    action: "suspend" | "approve";
+    action: "approve" | "suspend";
   }>({
     isOpen: false,
     retailer: null,
@@ -77,29 +67,28 @@ export default function RetailersPage() {
   };
 
   const handleConfirmAction = async () => {
-    const { retailer, action } = confirmModal;
-    if (!retailer) return;
+    if (!confirmModal.retailer) return;
+    const targetRetailer = confirmModal.retailer;
+    const newStatus = !targetRetailer.isActive;
 
+    setUpdatingId(targetRetailer.id);
     setConfirmModal({ isOpen: false, retailer: null, action: "suspend" });
-    setUpdatingId(retailer.id);
-    setError(null);
-    setSuccessMessage(null);
 
-    const newStatus = action === "approve";
-    const res = await apiClient(`/api/admin/users/${retailer.id}/status`, {
+    const res = await apiClient<{ user: RetailerUser }>(`/api/admin/users/${targetRetailer.id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ isActive: newStatus }),
     });
 
     if (res.success) {
-      setRetailers((prev) =>
-        prev.map((r) => (r.id === retailer.id ? { ...r, isActive: newStatus } : r))
-      );
       setSuccessMessage(
         newStatus
-          ? `Retailer '${retailer.name}' account approved and activated successfully.`
-          : `Retailer '${retailer.name}' account suspended. Store access has been revoked.`
+          ? `Retailer '${targetRetailer.name}' has been approved & activated.`
+          : `Retailer '${targetRetailer.name}' has been suspended.`
       );
+      setRetailers((prev) =>
+        prev.map((r) => (r.id === targetRetailer.id ? { ...r, isActive: newStatus } : r))
+      );
+      setTimeout(() => setSuccessMessage(null), 4000);
     } else {
       setError(res.message || "Failed to update retailer status");
     }
@@ -112,11 +101,11 @@ export default function RetailersPage() {
         {/* Header and Search */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
-              <Store className="w-5 h-5 text-blue-400" />
+            <h2 className="text-xl font-extrabold text-[#504932] tracking-tight flex items-center gap-2">
+              <Store className="w-5 h-5 text-[#B34E22]" />
               <span>Dark Store Retailers</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#7A7056] mt-0.5">
               Store managers, authorization status, and dark store assignments
             </p>
           </div>
@@ -129,50 +118,53 @@ export default function RetailersPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && fetchRetailers(search)}
                 placeholder="Search retailer..."
-                className="w-64 pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                style={{ color: "#504932", backgroundColor: "#FFFFFF", borderColor: "#E8E2D5" }}
+                className="w-64 pl-9 pr-3 py-2 bg-white border border-[#E8E2D5] rounded-xl text-xs text-[#504932] placeholder-[#9C937E] focus:outline-none focus:border-[#B34E22] shadow-xs"
               />
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-[#9C937E] absolute left-3 top-3" />
             </div>
             <button
               onClick={() => fetchRetailers(search)}
-              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition-colors"
+              style={{ color: "#504932", backgroundColor: "#FFFFFF", borderColor: "#E8E2D5" }}
+              className="p-2.5 bg-white hover:bg-[#FAF6ED] text-[#504932] rounded-xl border border-[#E8E2D5] shadow-xs transition-colors cursor-pointer"
+              title="Refresh Retailers"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#B34E22] ${isLoading ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
 
         {/* Success Banner */}
         {successMessage && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-              <span>{successMessage}</span>
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span className="font-bold">{successMessage}</span>
             </div>
-            <button onClick={() => setSuccessMessage(null)} className="text-emerald-400 hover:text-white">
-              <X className="w-3.5 h-3.5" />
+            <button onClick={() => setSuccessMessage(null)} className="text-emerald-700 hover:text-emerald-900 cursor-pointer">
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
         {/* Error Banner */}
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
               <span>{error}</span>
             </div>
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-white">
-              <X className="w-3.5 h-3.5" />
+            <button onClick={() => setError(null)} className="text-red-700 hover:text-red-900 cursor-pointer">
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
         {/* Retailers Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-[#E8E2D5] rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800 font-bold">
+              <thead className="bg-[#FAF6ED] text-[#504932] uppercase tracking-wider text-[11px] border-b border-[#E8E2D5] font-bold">
                 <tr>
                   <th className="py-3 px-4">Retailer Name</th>
                   <th className="py-3 px-4">Contact</th>
@@ -182,56 +174,61 @@ export default function RetailersPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
+              <tbody className="divide-y divide-[#F0EAE1] text-[#504932]">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500">
-                      Loading retailers...
+                    <td colSpan={6} className="py-12 text-center text-[#7A7056]">
+                      <RefreshCw className="w-5 h-5 text-[#B34E22] animate-spin mx-auto mb-2" />
+                      <span>Loading retailers...</span>
                     </td>
                   </tr>
                 ) : retailers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500">
-                      No retailers found.
+                    <td colSpan={6} className="py-12 text-center text-[#7A7056]">
+                      <Store className="w-8 h-8 text-[#9C937E] mx-auto mb-2 opacity-50" />
+                      <p className="font-semibold text-sm">No retailers found.</p>
+                      <p className="text-xs text-[#9C937E] mt-1">Try searching with a different term.</p>
                     </td>
                   </tr>
                 ) : (
                   retailers.map((r) => (
-                    <tr key={r.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-4 font-bold text-white flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">
-                          {r.name.slice(0, 1)}
+                    <tr key={r.id} className="hover:bg-[#FAF6ED]/50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-[#504932]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-[#EBD3AA] text-[#504932] flex items-center justify-center font-bold text-xs border border-[#E8E2D5]">
+                            {r.name.slice(0, 1).toUpperCase()}
+                          </div>
+                          <span>{r.name}</span>
                         </div>
-                        <span>{r.name}</span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-mono text-slate-200">{r.phoneNumber}</div>
-                        <div className="text-[10px] text-slate-400">{r.email || "—"}</div>
+                        <div className="font-mono text-[#504932] font-semibold">{r.phoneNumber}</div>
+                        <div className="text-[11px] text-[#7A7056]">{r.email || "—"}</div>
                       </td>
                       <td className="py-3 px-4">
                         {r.managedStore ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-blue-400">{r.managedStore.name}</span>
-                            <span className="text-[10px] text-slate-400 font-medium">({r.managedStore.city})</span>
+                            <span className="font-bold text-[#B34E22]">{r.managedStore.name}</span>
+                            <span className="text-[11px] text-[#7A7056] font-medium">({r.managedStore.city})</span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-medium">
+                          <span className="text-[11px] text-[#7A7056] bg-[#FAF6ED] px-2.5 py-0.5 rounded-md border border-[#E8E2D5] font-semibold">
                             Unassigned
                           </span>
                         )}
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                             r.isActive
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : "bg-red-500/10 text-red-400 border-red-500/20"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                              : "bg-red-50 text-red-800 border-red-300"
                           }`}
                         >
                           {r.isActive ? "APPROVED & ACTIVE" : "SUSPENDED"}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-slate-400">
+                      <td className="py-3 px-4 text-[#7A7056] font-medium">
                         {new Date(r.createdAt).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
@@ -242,22 +239,18 @@ export default function RetailersPage() {
                         <button
                           onClick={() => openConfirmation(r)}
                           disabled={updatingId === r.id}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                          style={{
+                            color: r.isActive ? "#B34E22" : "#047857",
+                            backgroundColor: r.isActive ? "#FFF7ED" : "#ECFDF5",
+                            borderColor: r.isActive ? "#FDBA74" : "#6EE7B7",
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-xs disabled:opacity-50 ${
                             r.isActive
-                              ? "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
-                              : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20"
-                          } disabled:opacity-50`}
+                              ? "hover:bg-red-50 hover:text-red-700"
+                              : "hover:bg-emerald-100 hover:text-emerald-900"
+                          }`}
                         >
-                          {updatingId === r.id ? (
-                            <span className="flex items-center gap-1">
-                              <RefreshCw className="w-3 h-3 animate-spin" />
-                              <span>Updating...</span>
-                            </span>
-                          ) : r.isActive ? (
-                            "Suspend"
-                          ) : (
-                            "Approve"
-                          )}
+                          {updatingId === r.id ? "Updating..." : r.isActive ? "Suspend" : "Approve Retailer"}
                         </button>
                       </td>
                     </tr>
@@ -268,66 +261,81 @@ export default function RetailersPage() {
           </div>
         </div>
 
-        {/* Safeguard Confirmation Modal */}
+        {/* Action Confirmation Modal */}
         {confirmModal.isOpen && confirmModal.retailer && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-              <div className="flex items-start gap-3">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="w-full max-w-md bg-white border border-[#E8E2D5] rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
                     confirmModal.action === "suspend"
-                      ? "bg-red-500/10 text-red-400"
-                      : "bg-emerald-500/10 text-emerald-400"
+                      ? "bg-red-50 text-red-600 border border-red-200"
+                      : "bg-emerald-50 text-emerald-600 border border-emerald-200"
                   }`}
                 >
-                  {confirmModal.action === "suspend" ? (
-                    <ShieldAlert className="w-5 h-5" />
-                  ) : (
-                    <UserCheck className="w-5 h-5" />
-                  )}
+                  <AlertCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">
-                    {confirmModal.action === "suspend" ? "Suspend Retailer Account?" : "Approve Retailer Account?"}
+                  <h3 className="text-base font-bold text-[#504932]">
+                    {confirmModal.action === "suspend" ? "Suspend Retailer Account" : "Approve Retailer Account"}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-[#7A7056]">
                     {confirmModal.action === "suspend"
-                      ? `Are you sure you want to suspend '${confirmModal.retailer.name}'?`
-                      : `Approve and activate retailer account for '${confirmModal.retailer.name}'?`}
+                      ? "This will restrict dark store inventory & order access."
+                      : "This will grant access to store inventory & fulfillment."}
                   </p>
                 </div>
               </div>
 
+              <div className="p-3.5 rounded-xl bg-[#FAF6ED] border border-[#E8E2D5] text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-[#7A7056]">Retailer Name:</span>
+                  <span className="font-bold text-[#504932]">{confirmModal.retailer.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#7A7056]">Phone:</span>
+                  <span className="font-mono text-[#504932]">{confirmModal.retailer.phoneNumber}</span>
+                </div>
+                {confirmModal.retailer.managedStore && (
+                  <div className="flex justify-between">
+                    <span className="text-[#7A7056]">Assigned Store:</span>
+                    <span className="font-bold text-[#B34E22]">{confirmModal.retailer.managedStore.name}</span>
+                  </div>
+                )}
+              </div>
+
               {confirmModal.action === "suspend" && confirmModal.retailer.managedStore && (
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Warning:</strong> This retailer is currently managing{" "}
-                    <strong>{confirmModal.retailer.managedStore.name}</strong>. Suspending this account will prevent
-                    them from processing incoming grocery orders.
-                  </span>
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                  <strong>Warning:</strong> This retailer is currently managing{" "}
+                  <strong>{confirmModal.retailer.managedStore.name}</strong>. Suspending will leave the store without an active manager.
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#E8E2D5]">
                 <button
                   type="button"
                   onClick={() => setConfirmModal({ isOpen: false, retailer: null, action: "suspend" })}
                   style={{ color: "#504932", backgroundColor: "#FAF6ED", borderColor: "#C8BEA7" }}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-[#504932] hover:bg-[#E8DFC9] border-2 border-[#C8BEA7] cursor-pointer shadow-xs"
+                  className="px-5 py-2.5 rounded-xl text-xs font-extrabold text-[#504932] hover:bg-[#E8DFC9] border-2 border-[#C8BEA7] cursor-pointer shadow-xs"
                 >
-                  <span style={{ color: "#504932" }} className="font-bold">Cancel</span>
+                  <span style={{ color: "#504932" }} className="font-extrabold">Cancel</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmAction}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold text-white transition-all ${
+                  style={{
+                    color: "#ffffff",
+                    backgroundColor: confirmModal.action === "suspend" ? "#DC2626" : "#059669",
+                  }}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-extrabold text-white transition-all shadow-md cursor-pointer ${
                     confirmModal.action === "suspend"
-                      ? "bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/20"
-                      : "bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20"
+                      ? "bg-red-600 hover:bg-red-700 shadow-red-600/25"
+                      : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25"
                   }`}
                 >
-                  {confirmModal.action === "suspend" ? "Confirm Suspension" : "Confirm Approval"}
+                  <span style={{ color: "#ffffff" }} className="font-extrabold text-white">
+                    {confirmModal.action === "suspend" ? "Confirm Suspension" : "Confirm Approval"}
+                  </span>
                 </button>
               </div>
             </div>
