@@ -411,13 +411,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                                         children: [
-                                          _buildStatItem(l10n.prepTime, '${recipe.prepTimeMinutes}m'),
+                                          Expanded(child: _buildStatItem(l10n.prepTime, '${recipe.prepTimeMinutes}m')),
                                           Container(width: 1, height: 26, color: AppTheme.cardBorder),
-                                          _buildStatItem(l10n.cookTime, '${recipe.cookTimeMinutes}m'),
+                                          Expanded(child: _buildStatItem(l10n.cookTime, '${recipe.cookTimeMinutes}m')),
                                           Container(width: 1, height: 26, color: AppTheme.cardBorder),
-                                          _buildStatItem(l10n.totalTime, '${recipe.totalTimeMinutes}m'),
+                                          Expanded(child: _buildStatItem(l10n.totalTime, '${recipe.totalTimeMinutes}m')),
                                           Container(width: 1, height: 26, color: AppTheme.cardBorder),
-                                          _buildStatItem(l10n.difficulty, recipe.difficulty),
+                                          Expanded(child: _buildStatItem(l10n.difficulty, recipe.difficulty)),
                                         ],
                                       ),
                                     ),
@@ -500,30 +500,29 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                           ),
                                           const SizedBox(height: 12),
                                           // Quick Servings Preset Chips: 2, 4, 6, 8
-                                          Row(
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
                                             children: [2, 4, 6, 8].map((s) {
                                               final isSelected = recipeProv.currentServings == s;
-                                              return Padding(
-                                                padding: const EdgeInsets.only(right: 8),
-                                                child: InkWell(
-                                                  onTap: () => recipeProv.updateServings(s),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                    decoration: BoxDecoration(
-                                                      color: isSelected ? AppTheme.oliveGreen : Colors.white,
-                                                      borderRadius: BorderRadius.circular(8),
-                                                      border: Border.all(
-                                                        color: isSelected ? AppTheme.oliveGreen : AppTheme.cardBorder,
-                                                      ),
+                                              return InkWell(
+                                                onTap: () => recipeProv.updateServings(s),
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected ? AppTheme.oliveGreen : Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    border: Border.all(
+                                                      color: isSelected ? AppTheme.oliveGreen : AppTheme.cardBorder,
                                                     ),
-                                                    child: Text(
-                                                      '$s ${l10n.servings}',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                                        color: isSelected ? Colors.white : AppTheme.cocoaBrown,
-                                                      ),
+                                                  ),
+                                                  child: Text(
+                                                    '$s ${l10n.servings}',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                                      color: isSelected ? Colors.white : AppTheme.cocoaBrown,
                                                     ),
                                                   ),
                                                 ),
@@ -538,51 +537,58 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                     // Ingredients List Section
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  '${l10n.ingredients} (${recipe.ingredients.length})',
-                                                  style: const TextStyle(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w800,
-                                                    color: AppTheme.cocoaBrown,
-                                                  ),
-                                                ),
-                                                if (_alreadyHaveProductIds.isNotEmpty) ...[
-                                                  const SizedBox(width: 8),
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: AppTheme.creamBeigeLight,
-                                                      borderRadius: BorderRadius.circular(10),
-                                                      border: Border.all(color: AppTheme.creamBeige),
-                                                    ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Flexible(
                                                     child: Text(
-                                                      l10n.inPantryBadge(_alreadyHaveProductIds.length),
+                                                      '${l10n.ingredients} (${recipe.ingredients.length})',
                                                       style: const TextStyle(
-                                                        fontSize: 11,
+                                                        fontSize: 17,
                                                         fontWeight: FontWeight.w800,
                                                         color: AppTheme.cocoaBrown,
                                                       ),
+                                                      overflow: TextOverflow.ellipsis,
                                                     ),
                                                   ),
+                                                  if (_alreadyHaveProductIds.isNotEmpty) ...[
+                                                    const SizedBox(width: 8),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: AppTheme.creamBeigeLight,
+                                                        borderRadius: BorderRadius.circular(10),
+                                                        border: Border.all(color: AppTheme.creamBeige),
+                                                      ),
+                                                      child: Text(
+                                                        l10n.inPantryBadge(_alreadyHaveProductIds.length),
+                                                        style: const TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight: FontWeight.w800,
+                                                          color: AppTheme.cocoaBrown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ],
-                                              ],
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              l10n.markInPantryHelp,
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: AppTheme.textMuted,
                                               ),
-                                            ),
-                                          ],
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                l10n.markInPantryHelp,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  color: AppTheme.textMuted,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
+                                        const SizedBox(width: 8),
                                         Text(
                                           l10n.scaledFor(recipeProv.currentServings, recipeProv.currentServings == 1 ? l10n.person : l10n.people),
                                           style: const TextStyle(
@@ -677,75 +683,83 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                                   ),
                                                 ),
 
-                                                // Formatted Scaled Quantity
-                                                if (qtyText.isNotEmpty) ...[
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: isAlreadyHave ? AppTheme.cardBorderSubtle : AppTheme.creamBeigeSoft,
-                                                      borderRadius: BorderRadius.circular(8),
-                                                      border: Border.all(
-                                                        color: isAlreadyHave ? AppTheme.cardBorder : AppTheme.creamBeigeLight,
-                                                      ),
-                                                    ),
-                                                    child: Text(
-                                                      qtyText,
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.w800,
-                                                        fontSize: 12,
-                                                        color: isAlreadyHave ? AppTheme.textMuted : AppTheme.cocoaBrown,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                const SizedBox(width: 8),
 
-                                                // Pantry "I Already Have" Checkbox / Toggle
-                                                if (ing.hasLinkedProduct) ...[
-                                                  const SizedBox(width: 8),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        if (isAlreadyHave) {
-                                                          _alreadyHaveProductIds.remove(ing.productId);
-                                                        } else {
-                                                          _alreadyHaveProductIds.add(ing.productId);
-                                                        }
-                                                      });
-                                                    },
-                                                    borderRadius: BorderRadius.circular(8),
-                                                    child: AnimatedContainer(
-                                                      duration: const Duration(milliseconds: 150),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                                      decoration: BoxDecoration(
-                                                        color: isAlreadyHave ? AppTheme.oliveGreenSoft : Colors.white,
-                                                        borderRadius: BorderRadius.circular(8),
-                                                        border: Border.all(
-                                                          color: isAlreadyHave ? AppTheme.oliveGreen : AppTheme.cardBorder,
-                                                          width: isAlreadyHave ? 1.5 : 1,
+                                                // Trailing: Scaled Quantity & Pantry Toggle in Compact Column
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    // Formatted Scaled Quantity
+                                                    if (qtyText.isNotEmpty)
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                        decoration: BoxDecoration(
+                                                          color: isAlreadyHave ? AppTheme.cardBorderSubtle : AppTheme.creamBeigeSoft,
+                                                          borderRadius: BorderRadius.circular(8),
+                                                          border: Border.all(
+                                                            color: isAlreadyHave ? AppTheme.cardBorder : AppTheme.creamBeigeLight,
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          qtyText,
+                                                          style: TextStyle(
+                                                            fontWeight: FontWeight.w800,
+                                                            fontSize: 12,
+                                                            color: isAlreadyHave ? AppTheme.textMuted : AppTheme.cocoaBrown,
+                                                          ),
                                                         ),
                                                       ),
-                                                      child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          Icon(
-                                                            isAlreadyHave ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                                                            size: 16,
-                                                            color: isAlreadyHave ? AppTheme.oliveGreen : AppTheme.textMuted,
-                                                          ),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            isAlreadyHave ? l10n.inPantry : l10n.iHaveThis,
-                                                            style: TextStyle(
-                                                              fontSize: 11,
-                                                              fontWeight: isAlreadyHave ? FontWeight.bold : FontWeight.w500,
-                                                              color: isAlreadyHave ? AppTheme.oliveGreen : AppTheme.cocoaBrown,
+
+                                                    // Pantry "I Already Have" Checkbox / Toggle
+                                                    if (ing.hasLinkedProduct) ...[
+                                                      const SizedBox(height: 5),
+                                                      InkWell(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            if (isAlreadyHave) {
+                                                              _alreadyHaveProductIds.remove(ing.productId);
+                                                            } else {
+                                                              _alreadyHaveProductIds.add(ing.productId);
+                                                            }
+                                                          });
+                                                        },
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        child: AnimatedContainer(
+                                                          duration: const Duration(milliseconds: 150),
+                                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                          decoration: BoxDecoration(
+                                                            color: isAlreadyHave ? AppTheme.oliveGreenSoft : Colors.white,
+                                                            borderRadius: BorderRadius.circular(8),
+                                                            border: Border.all(
+                                                              color: isAlreadyHave ? AppTheme.oliveGreen : AppTheme.cardBorder,
+                                                              width: isAlreadyHave ? 1.5 : 1,
                                                             ),
                                                           ),
-                                                        ],
+                                                          child: Row(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              Icon(
+                                                                isAlreadyHave ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                                                                size: 15,
+                                                                color: isAlreadyHave ? AppTheme.oliveGreen : AppTheme.textMuted,
+                                                              ),
+                                                              const SizedBox(width: 4),
+                                                              Text(
+                                                                isAlreadyHave ? l10n.inPantry : l10n.iHaveThis,
+                                                                style: TextStyle(
+                                                                  fontSize: 11,
+                                                                  fontWeight: isAlreadyHave ? FontWeight.bold : FontWeight.w500,
+                                                                  color: isAlreadyHave ? AppTheme.oliveGreen : AppTheme.cocoaBrown,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                    ],
+                                                  ],
+                                                ),
                                               ],
                                             ),
                                           );

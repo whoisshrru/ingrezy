@@ -18,6 +18,7 @@ router.get("/:identifier", getProductByIdOrSlug);
 // Admin-only product management routes
 router.post("/", authenticate, requireRole(Role.ADMIN), createProduct);
 router.put("/:id", authenticate, requireRole(Role.ADMIN), updateProduct);
+router.patch("/:id", authenticate, requireRole(Role.ADMIN), updateProduct);
 router.delete("/:id", authenticate, requireRole(Role.ADMIN), deleteProduct);
 
 export default router;

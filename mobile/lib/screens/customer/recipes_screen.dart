@@ -218,30 +218,33 @@ class _RecipesScreenState extends State<RecipesScreen> {
                       const SizedBox(height: 10),
 
                       // Dietary Filter Chips (All, Veg, Non-Veg)
-                      Row(
-                        children: [
-                          _buildDietaryChip(
-                            label: l10n.allDifficulties,
-                            isSelected: recipeProv.dietaryFilter == 'ALL',
-                            onTap: () => recipeProv.setDietaryFilter('ALL'),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildDietaryChip(
-                            label: l10n.dietaryVeg,
-                            icon: Icons.eco_rounded,
-                            iconColor: AppTheme.oliveGreen,
-                            isSelected: recipeProv.dietaryFilter == 'VEG',
-                            onTap: () => recipeProv.setDietaryFilter('VEG'),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildDietaryChip(
-                            label: l10n.dietaryNonVeg,
-                            icon: Icons.restaurant,
-                            iconColor: const Color(0xFFB91C1C),
-                            isSelected: recipeProv.dietaryFilter == 'NON_VEG',
-                            onTap: () => recipeProv.setDietaryFilter('NON_VEG'),
-                          ),
-                        ],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildDietaryChip(
+                              label: l10n.allDifficulties,
+                              isSelected: recipeProv.dietaryFilter == 'ALL',
+                              onTap: () => recipeProv.setDietaryFilter('ALL'),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildDietaryChip(
+                              label: l10n.dietaryVeg,
+                              icon: Icons.eco_rounded,
+                              iconColor: AppTheme.oliveGreen,
+                              isSelected: recipeProv.dietaryFilter == 'VEG',
+                              onTap: () => recipeProv.setDietaryFilter('VEG'),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildDietaryChip(
+                              label: l10n.dietaryNonVeg,
+                              icon: Icons.restaurant,
+                              iconColor: const Color(0xFFB91C1C),
+                              isSelected: recipeProv.dietaryFilter == 'NON_VEG',
+                              onTap: () => recipeProv.setDietaryFilter('NON_VEG'),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -253,14 +256,18 @@ class _RecipesScreenState extends State<RecipesScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '${recipeProv.recipes.length} ${recipeProv.recipes.length == 1 ? 'Recipe' : 'Recipes'} Available',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.cocoaBrown,
+                      Expanded(
+                        child: Text(
+                          '${recipeProv.recipes.length} ${recipeProv.recipes.length == 1 ? 'Recipe' : 'Recipes'} Available',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.cocoaBrown,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       if (recipeProv.selectedCuisine != 'All')
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -479,33 +486,39 @@ class _RecipesScreenState extends State<RecipesScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.creamBeigeLight,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.cardBorder),
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.creamBeigeLight,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.cardBorder),
+                    ),
+                    child: Icon(
+                      _getCategoryIcon(category),
+                      size: 16,
+                      color: AppTheme.cocoaBrown,
+                    ),
                   ),
-                  child: Icon(
-                    _getCategoryIcon(category),
-                    size: 16,
-                    color: AppTheme.cocoaBrown,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${ContentLocalizer.recipeCuisine(category, Localizations.localeOf(context).languageCode)} ${l10n.navRecipes}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.cocoaBrown,
+                        letterSpacing: -0.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${ContentLocalizer.recipeCuisine(category, Localizations.localeOf(context).languageCode)} ${l10n.navRecipes}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.cocoaBrown,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -717,33 +730,46 @@ class RecipeGridCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.group_outlined, size: 12, color: AppTheme.textMuted),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${recipe.servings} ${l10n.servings}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.textMuted,
-                              fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.group_outlined, size: 12, color: AppTheme.textMuted),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                '${recipe.servings} ${l10n.servings}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      Row(
-                        children: [
-                          const Icon(Icons.shopping_basket_outlined, size: 12, color: AppTheme.oliveGreen),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${recipe.ingredients.length} ${l10n.items}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.oliveGreen,
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.shopping_basket_outlined, size: 12, color: AppTheme.oliveGreen),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                '${recipe.ingredients.length} ${l10n.items}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.oliveGreen,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),

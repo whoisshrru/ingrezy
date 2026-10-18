@@ -11,6 +11,7 @@ import {
   getEligibleDeliveryPartners,
   assignDeliveryPartner,
 } from "../controllers/admin.controller.js";
+import { listStores } from "../controllers/store.controller.js";
 import { authenticate, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use(authenticate, requireRole(Role.ADMIN));
 router.get("/metrics", getDashboardMetrics);
 router.get("/users", listUsers);
 router.patch("/users/:id/status", updateUserStatus);
+router.get("/stores", listStores);
 router.get("/stores/:id/eligible-managers", getEligibleStoreManagers);
 router.patch("/stores/:id/manager", assignStoreManager);
 router.get("/inventory", getAdminInventory);

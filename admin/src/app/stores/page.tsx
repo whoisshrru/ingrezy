@@ -24,7 +24,8 @@ interface DarkStore {
   postalCode: string;
   latitude: number;
   longitude: number;
-  deliveryRadiusKm: number;
+  serviceRadiusKm?: number;
+  deliveryRadiusKm?: number;
   isActive: boolean;
   manager?: {
     id: string;
@@ -66,7 +67,7 @@ export default function StoresPage() {
   const fetchStores = async () => {
     setIsLoading(true);
     setError(null);
-    const res = await apiClient<{ stores: DarkStore[] }>("/api/admin/stores");
+    const res = await apiClient<{ stores: DarkStore[] }>("/api/stores");
     if (res.success && res.data) {
       setStores(res.data.stores);
     } else {
@@ -250,7 +251,7 @@ export default function StoresPage() {
                         <Radio className="w-3 h-3 text-[#6A6332]" />
                         <span>Delivery Radius:</span>
                       </span>
-                      <span className="font-bold text-[#6A6332]">{store.deliveryRadiusKm} km</span>
+                      <span className="font-bold text-[#6A6332]">{store.serviceRadiusKm ?? store.deliveryRadiusKm ?? 5} km</span>
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-[#E8E2D5]">

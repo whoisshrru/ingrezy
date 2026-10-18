@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
           break;
         case UserRole.ADMIN:
           _identifierController.text = 'admin@ingrezy.com';
-          _passwordController.text = 'Admin@123';
+          _passwordController.text = 'Password@123';
           break;
       }
     });
@@ -130,15 +130,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context);
     final authProv = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProv.login(
-      identifier: _identifierController.text,
+      identifier: _identifierController.text.trim(),
       password: _passwordController.text,
     );
 
     if (!success && mounted) {
+      final msg = (authProv.errorMessage != null && authProv.errorMessage!.isNotEmpty)
+          ? authProv.errorMessage!
+          : l10n.loginFailed;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProv.errorMessage ?? l10n.loginFailed),
-          backgroundColor: Colors.redAccent,
+          content: Text(msg),
+          backgroundColor: const Color(0xFFC0392B),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

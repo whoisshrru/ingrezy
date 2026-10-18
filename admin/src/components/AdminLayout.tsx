@@ -40,24 +40,38 @@ const navItems: NavItem[] = [
   { label: "Inventory", href: "/inventory", icon: Boxes },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user, isLoading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Keep the first server and browser render identical.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (!isLoading && !user && pathname !== "/login") {
-      router.push("/login");
+    if (mounted && !isLoading && !user && pathname !== "/login") {
+      router.replace("/login");
     }
-  }, [user, isLoading, pathname, router]);
+  }, [mounted, user, isLoading, pathname, router]);
 
-  if (isLoading) {
+  // Render the same warm loading screen during SSR and the first client render.
+  if (!mounted || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFFCF5] text-[#504932]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-[#B34E22] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-[#504932]">Loading Ingrezy Admin...</p>
+          <p className="text-sm font-semibold text-[#504932]">
+            Loading Ingrezy Admin...
+          </p>
         </div>
       </div>
     );
@@ -76,22 +90,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             I
           </div>
           <span className="font-bold text-lg tracking-tight text-[#504932]">
-            Ingrezy <span className="text-[#B34E22] text-xs font-semibold uppercase tracking-wider ml-1">Admin</span>
+            Ingrezy{" "}
+            <span className="text-[#B34E22] text-xs font-semibold uppercase tracking-wider ml-1">
+              Admin
+            </span>
           </span>
         </div>
+
         <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          type="button"
+          aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen((open) => !open)}
           className="p-2 rounded-lg bg-[#FAF6ED] text-[#504932] hover:bg-[#F5EFE3] border border-[#E8E2D5]"
         >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {isMobileMenuOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
         </button>
       </header>
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E8E2D5] flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E8E2D5] flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Brand Header */}
         <div className="h-16 flex items-center px-6 border-b border-[#E8E2D5] gap-3">
@@ -105,7 +129,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 PRO
               </span>
             </div>
-            <p className="text-[11px] font-medium text-[#7A7056]">Operations Control</p>
+            <p className="text-[11px] font-medium text-[#7A7056]">
+              Operations Control
+            </p>
           </div>
         </div>
 
@@ -114,25 +140,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="px-3 pb-2 text-[10px] font-bold tracking-wider text-[#7A7056] uppercase">
             Platform Modules
           </div>
+
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                     ? "bg-[#B34E22] text-white font-bold shadow-sm shadow-[#B34E22]/25"
                     : "text-[#504932] hover:text-[#B34E22] hover:bg-[#FAF6ED]"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-[#7A7056]"}`} />
+                  <Icon
+                    className={`w-4 h-4 ${isActive ? "text-white" : "text-[#7A7056]"
+                      }`}
+                  />
                   <span>{item.label}</span>
                 </div>
-                {isActive && <ChevronRight className="w-4 h-4 text-white/90" />}
+
+                {isActive && (
+                  <ChevronRight className="w-4 h-4 text-white/90" />
+                )}
               </Link>
             );
           })}
@@ -146,13 +179,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <ShieldCheck className="w-4 h-4 text-[#B34E22]" />
               </div>
               <div className="truncate">
-                <p className="text-xs font-semibold text-[#504932] truncate">{user?.name || "Admin"}</p>
-                <p className="text-[10px] text-[#B34E22] font-semibold">Platform Admin</p>
+                <p className="text-xs font-semibold text-[#504932] truncate">
+                  {user?.name || "Admin"}
+                </p>
+                <p className="text-[10px] text-[#B34E22] font-semibold">
+                  Platform Admin
+                </p>
               </div>
             </div>
+
             <button
+              type="button"
               onClick={logout}
               title="Logout from Admin Panel"
+              aria-label="Logout from Admin Panel"
               className="p-1.5 rounded-lg text-[#7A7056] hover:text-red-500 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-4 h-4" />
@@ -167,7 +207,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="hidden md:flex h-16 items-center justify-between px-8 border-b border-[#E8E2D5] bg-white sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <h1 className="text-base font-bold text-[#504932] capitalize">
-              {pathname === "/dashboard" ? "Platform Overview" : pathname.replace("/", "").replace("-", " ")}
+              {pathname === "/dashboard"
+                ? "Platform Overview"
+                : pathname.replace("/", "").replace("-", " ")}
             </h1>
             <span className="text-xs text-[#7A7056] font-medium">•</span>
             <span className="text-xs font-semibold text-[#6A6332] flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 rounded-full border border-[#E8E2D5]">
@@ -178,8 +220,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-xs font-semibold text-[#504932]">{user?.name}</p>
-              <p className="text-[11px] text-[#7A7056]">{user?.email || user?.phoneNumber}</p>
+              <p className="text-xs font-semibold text-[#504932]">
+                {user?.name}
+              </p>
+              <p className="text-[11px] text-[#7A7056]">
+                {user?.email || user?.phoneNumber}
+              </p>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#EBD3AA] border border-[#E8E2D5] flex items-center justify-center text-xs font-bold text-[#504932] shadow-xs">
               {user?.name?.slice(0, 2).toUpperCase() || "AD"}
@@ -188,12 +234,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 p-4 md:p-8 bg-[#FFFCF5]">{children}</main>
+        <main className="flex-1 p-4 md:p-8 bg-[#FFFCF5]">
+          {children}
+        </main>
       </div>
 
       {/* Mobile Backdrop */}
       {isMobileMenuOpen && (
         <div
+          aria-hidden="true"
           onClick={() => setIsMobileMenuOpen(false)}
           className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden"
         />

@@ -19,10 +19,10 @@ export default function RootPage() {
   }, [user, isLoading, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400 text-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[#FFFCF5] text-[#504932] text-sm">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <p>Routing to Ingrezy Admin...</p>
+        <div className="w-8 h-8 border-3 border-[#B34E22] border-t-transparent rounded-full animate-spin" />
+        <p className="font-semibold text-[#504932]">Routing to Ingrezy Admin...</p>
       </div>
     </div>
   );
