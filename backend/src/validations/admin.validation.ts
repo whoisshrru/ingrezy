@@ -6,7 +6,7 @@ export const updateUserStatusSchema = z.object({
 });
 
 export const assignStoreManagerSchema = z.object({
-  managerId: z.string().uuid("Invalid manager user ID format").nullable(),
+  managerId: z.string().min(1, "Invalid manager user ID format").nullable(),
 });
 
 export const userQuerySchema = z.object({
@@ -17,7 +17,7 @@ export const userQuerySchema = z.object({
 });
 
 export const assignDeliveryPartnerSchema = z.object({
-  deliveryPartnerId: z.string().uuid("Invalid delivery partner user ID format").nullable(),
+  deliveryPartnerId: z.string().min(1, "Invalid delivery partner user ID format").nullable(),
   confirmReassign: z.boolean().optional().default(false),
 });
 

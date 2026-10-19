@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const checkoutItemSchema = z.object({
-  productId: z.string().uuid("Invalid product ID format"),
+  productId: z.string().min(1, "Product ID is required"),
   quantity: z.number().int().positive("Quantity must be a positive integer"),
 });
 
 export const checkoutSchema = z.object({
-  addressId: z.string().uuid("Invalid address ID format"),
+  addressId: z.string().min(1, "Address ID is required"),
   paymentMethod: z.enum(["COD", "ONLINE"]).optional().default("COD"),
   specialInstructions: z.string().trim().max(500, "Special instructions cannot exceed 500 characters").optional(),
   idempotencyKey: z.string().trim().min(1).max(255).optional(),

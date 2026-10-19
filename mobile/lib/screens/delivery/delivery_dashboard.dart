@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/delivery_provider.dart';
 import '../../widgets/common_widgets.dart';
 import '../../widgets/language_selector_sheet.dart';
+import '../customer/profile_screen.dart';
 
 class DeliveryDashboard extends StatefulWidget {
   const DeliveryDashboard({super.key});
@@ -181,11 +182,48 @@ class _DeliveryDashboardState extends State<DeliveryDashboard> {
                 icon: const Icon(Icons.my_location, color: AppTheme.spiceOrange),
                 onPressed: () => _simulateLocationUpdate(context, delProv),
               ),
-              IconButton(
-                tooltip: l10n.logOut,
-                icon: const Icon(Icons.logout, color: AppTheme.cocoaBrownLight),
-                onPressed: () => authProv.logout(),
+              const SizedBox(width: 4),
+              // Rider Profile Button
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
+                  child: Tooltip(
+                    message: l10n.profile,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.oliveGreen,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppTheme.creamBeigeLight,
+                        child: Text(
+                          authProv.user?.name.isNotEmpty == true
+                              ? authProv.user!.name.substring(0, 1).toUpperCase()
+                              : 'D',
+                          style: const TextStyle(
+                            color: AppTheme.cocoaBrown,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
+              const SizedBox(width: 12),
             ],
           ),
           body: RefreshIndicator(

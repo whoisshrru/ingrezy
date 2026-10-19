@@ -3,7 +3,7 @@ import { DietaryType } from "@prisma/client";
 
 export const recipeIngredientInputSchema = z
   .object({
-    productId: z.string().uuid("Invalid product ID format").nullable().optional(),
+    productId: z.string().min(1, "Invalid product ID format").nullable().optional(),
     ingredientName: z.string().trim().optional(),
     quantity: z.number().positive("Ingredient quantity must be greater than zero"),
     unit: z.string().trim().min(1, "Ingredient unit is required (e.g. g, ml, piece, tsp, cup)"),
@@ -89,7 +89,7 @@ export const recipePreviewQuerySchema = z.object({
     .int("Servings must be an integer")
     .positive("Target servings must be at least 1")
     .optional(),
-  storeId: z.string().uuid("Invalid store ID format").optional(),
+  storeId: z.string().min(1, "Store ID is required").optional(),
 });
 
 export type CreateRecipeInput = z.infer<typeof createRecipeSchema>;

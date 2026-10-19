@@ -9,9 +9,9 @@ class ApiConfig {
     if (kIsWeb) {
       return 'http://localhost:5000';
     }
-    // Android emulator loops back to host machine via 10.0.2.2
+    // Android: uses http://localhost:5000 via 'adb reverse tcp:5000 tcp:5000' over USB
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000';
+      return 'http://localhost:5000';
     }
     // Windows / macOS / Linux / iOS simulator
     return 'http://localhost:5000';

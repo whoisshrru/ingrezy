@@ -42,6 +42,7 @@ interface ProductFormData {
   imageUrl: string;
   dietaryType: string;
   isActive: boolean;
+  initialStock: string;
 }
 
 const initialFormData: ProductFormData = {
@@ -53,6 +54,7 @@ const initialFormData: ProductFormData = {
   imageUrl: "",
   dietaryType: "VEG",
   isActive: true,
+  initialStock: "100",
 };
 
 const CATEGORIES = [
@@ -129,6 +131,7 @@ export default function ProductsPage() {
       imageUrl: p.imageUrl || "",
       dietaryType: p.dietaryType || "VEG",
       isActive: p.isActive,
+      initialStock: "100",
     });
     setFormErrors({});
     setError(null);
@@ -195,6 +198,7 @@ export default function ProductsPage() {
       imageUrl: formData.imageUrl.trim() || undefined,
       dietaryType: formData.dietaryType,
       isActive: formData.isActive,
+      initialStock: parseInt(formData.initialStock, 10) || 100,
     };
 
     let res;
@@ -624,6 +628,26 @@ export default function ProductsPage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Initial Stock (Only for new products) */}
+                {!editingProduct && (
+                  <div>
+                    <label className="block text-xs font-bold text-[#504932] mb-1">
+                      Initial Store Stock <span className="text-[#B34E22]">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.initialStock}
+                      onChange={(e) => setFormData({ ...formData, initialStock: e.target.value })}
+                      placeholder="e.g. 100"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#E8E2D5] focus:outline-none focus:border-[#B34E22]"
+                    />
+                    <p className="text-[10px] text-[#7A7056] mt-1">
+                      This stock will be made available in the Dark Store so customers can see and order it immediately.
+                    </p>
+                  </div>
+                )}
 
                 {/* Image URL */}
                 <div>

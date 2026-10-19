@@ -9,6 +9,7 @@ import '../../widgets/common_widgets.dart';
 import '../../widgets/language_selector_sheet.dart';
 import '../../widgets/product_card.dart';
 import 'cart_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onNavigateTab;
@@ -275,15 +276,47 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                           const SizedBox(width: 8),
-                          // User profile / initial avatar
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundColor: AppTheme.creamBeigeLight,
-                            child: Text(
-                              authProv.user?.name.substring(0, 1).toUpperCase() ?? 'U',
-                              style: const TextStyle(
-                                color: AppTheme.cocoaBrown,
-                                fontWeight: FontWeight.w800,
+                          // User profile / initial avatar ("P" logo)
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProfileScreen(
+                                      onNavigateTab: widget.onNavigateTab,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Tooltip(
+                                message: l10n.profile,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppTheme.oliveGreen,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 17,
+                                    backgroundColor: AppTheme.creamBeigeLight,
+                                    child: Text(
+                                      authProv.user?.name.isNotEmpty == true
+                                          ? authProv.user!.name.substring(0, 1).toUpperCase()
+                                          : 'P',
+                                      style: const TextStyle(
+                                        color: AppTheme.cocoaBrown,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
