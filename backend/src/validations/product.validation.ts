@@ -15,6 +15,8 @@ export const createProductSchema = z.object({
   imageUrl: z.string().trim().url("Image URL must be a valid URL").optional().or(z.literal("")),
   dietaryType: z.nativeEnum(DietaryType).optional().default(DietaryType.VEG),
   isActive: z.boolean().optional().default(true),
+  initialStock: z.number().int().nonnegative().optional().default(100),
+  storeId: z.string().optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial();

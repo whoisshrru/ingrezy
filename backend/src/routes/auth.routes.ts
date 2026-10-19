@@ -12,6 +12,7 @@ router.post("/login", login);
 
 // Protected routes (Any authenticated user)
 router.get("/me", authenticate, getProfile);
+router.get("/profile", authenticate, getProfile);
 
 // RBAC Protected routes for role verification
 router.get("/admin-check", authenticate, requireRole(Role.ADMIN), (req: AuthenticatedRequest, res: Response) => {

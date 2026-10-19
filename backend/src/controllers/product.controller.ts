@@ -198,6 +198,44 @@ export async function createProduct(req: Request, res: Response): Promise<void> 
       },
     });
 
+    // Auto-populate inventory in active store(s) so customer app can immediately display & purchase product
+    const initialStockQty = parseResult.data.initialStock ?? 100;
+    const specifiedStoreId = parseResult.data.storeId;
+
+    let targetStores: Array<{ id: string }> = [];
+    if (specifiedStoreId) {
+      targetStores = [{ id: specifiedStoreId }];
+    } else {
+      targetStores = await prisma.store.findMany({
+        where: { isActive: true },
+        select: { id: true },
+      });
+    }
+
+    if (targetStores.length > 0) {
+      for (const s of targetStores) {
+        await prisma.inventory.upsert({
+          where: {
+            storeId_productId: {
+              storeId: s.id,
+              productId: product.id,
+            },
+          },
+          update: {
+            price: product.basePrice,
+            isAvailable: product.isActive,
+          },
+          create: {
+            storeId: s.id,
+            productId: product.id,
+            stockQuantity: initialStockQty,
+            price: product.basePrice,
+            isAvailable: product.isActive,
+          },
+        });
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: "Product created successfully",
@@ -261,6 +299,20 @@ export async function updateProduct(req: Request, res: Response): Promise<void> 
       where: { id },
       data,
     });
+
+    // Sync inventory price and availability across stores
+    if (input.basePrice !== undefined) {
+      await prisma.inventory.updateMany({
+        where: { productId: id },
+        data: { price: new Prisma.Decimal(input.basePrice) },
+      });
+    }
+    if (input.isActive !== undefined) {
+      await prisma.inventory.updateMany({
+        where: { productId: id },
+        data: { isAvailable: input.isActive },
+      });
+    }
 
     res.status(200).json({
       success: true,

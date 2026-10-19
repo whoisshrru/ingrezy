@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createStoreSchema = z.object({
   name: z.string().trim().min(2, "Store name must be at least 2 characters long"),
-  managerId: z.string().uuid("Invalid manager ID format").optional(),
+  managerId: z.string().min(1, "Manager ID is required").optional(),
   address: z.string().trim().min(5, "Address must be at least 5 characters long"),
   city: z.string().trim().min(2, "City is required"),
   state: z.string().trim().min(2, "State is required"),
@@ -16,7 +16,7 @@ export const createStoreSchema = z.object({
 export const updateStoreSchema = createStoreSchema.partial();
 
 export const setInventoryItemSchema = z.object({
-  productId: z.string().uuid("Invalid product ID format"),
+  productId: z.string().min(1, "Product ID is required"),
   stockQuantity: z
     .number()
     .int("Stock quantity must be an integer")
@@ -44,7 +44,7 @@ export const batchInventorySchema = z.object({
 
 export const storeInventoryQuerySchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
-  limit: z.coerce.number().int().positive().max(100).optional().default(10),
+  limit: z.coerce.number().int().positive().max(100).optional().default(100),
   search: z.string().trim().optional(),
   category: z.string().trim().optional(),
   availableOnly: z.enum(["true", "false"]).optional().default("true"),

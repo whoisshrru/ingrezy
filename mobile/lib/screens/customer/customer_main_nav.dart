@@ -6,6 +6,7 @@ import '../../providers/cart_provider.dart';
 import 'cart_screen.dart';
 import 'home_screen.dart';
 import 'orders_screen.dart';
+import 'profile_screen.dart';
 import 'recipes_screen.dart';
 
 class CustomerMainNav extends StatefulWidget {
@@ -32,6 +33,7 @@ class _CustomerMainNavState extends State<CustomerMainNav> {
       const RecipesScreen(),
       CartScreen(onBrowseGroceries: () => _onTabSelected(0)),
       OrdersScreen(onStartShopping: () => _onTabSelected(0)),
+      ProfileScreen(onNavigateTab: _onTabSelected),
     ];
 
     return Scaffold(
@@ -116,6 +118,11 @@ class _CustomerMainNavState extends State<CustomerMainNav> {
             icon: const Icon(Icons.receipt_long_outlined),
             activeIcon: const Icon(Icons.receipt_long),
             label: l10n.navOrders,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: l10n.profile,
           ),
         ],
       ),

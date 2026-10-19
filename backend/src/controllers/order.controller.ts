@@ -64,23 +64,17 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
   try {
     // 1. Persistent Idempotency Check (Checked before touching or relying on active cart)
     if (sanitizedIdempotencyKey) {
-      // Step A: Check active/completed IdempotencyRecord in PostgreSQL first
-      const existingRecords = await (prisma as any).$queryRaw<Array<{
-        id: string;
-        status: "IN_PROGRESS" | "COMPLETED" | "FAILED";
-        requestHash: string;
-        statusCode: number | null;
-        response: any;
-        orderId: string | null;
-      }>>`
-        SELECT "id", "status", "requestHash", "statusCode", "response", "orderId"
-        FROM "idempotency_records"
-        WHERE "userId" = ${userId} AND "key" = ${sanitizedIdempotencyKey}
-        LIMIT 1
-      `;
+      // Step A: Check active/completed IdempotencyRecord first
+      const record = await (prisma as any).idempotencyRecord.findUnique({
+        where: {
+          userId_key: {
+            userId,
+            key: sanitizedIdempotencyKey,
+          },
+        },
+      });
 
-      if (existingRecords.length > 0) {
-        const record = existingRecords[0];
+      if (record) {
         if (record.status === "COMPLETED") {
           // If items were explicitly supplied in incoming request, verify canonical hash
           if (parseResult.data.items && parseResult.data.items.length > 0) {
@@ -264,36 +258,37 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
     const checkoutExecution = (async (): Promise<CheckoutResponsePayload> => {
       const result = await prisma.$transaction(
         async (tx) => {
-          // 1. If idempotency key provided, coordinate via PostgreSQL IdempotencyRecord
+          // 1. If idempotency key provided, coordinate via IdempotencyRecord
           if (sanitizedIdempotencyKey) {
-            // Speculative insertion with ON CONFLICT DO NOTHING
-            await tx.$executeRaw`
-              INSERT INTO "idempotency_records" ("id", "userId", "key", "requestHash", "status", "createdAt", "updatedAt")
-              VALUES (${crypto.randomUUID()}, ${userId}, ${sanitizedIdempotencyKey}, ${candidateHash}, 'IN_PROGRESS'::"IdempotencyStatus", NOW(), NOW())
-              ON CONFLICT ("userId", "key") DO NOTHING
-            `;
+            try {
+              await tx.idempotencyRecord.create({
+                data: {
+                  userId,
+                  key: sanitizedIdempotencyKey,
+                  requestHash: candidateHash,
+                  status: "IN_PROGRESS",
+                },
+              });
+            } catch {
+              // Speculative insertion: ignore duplicate key error
+            }
 
-            // Acquire row-level lock on the idempotency record
-            const lockedRecords = await tx.$queryRaw<Array<{
-              id: string;
-              status: "IN_PROGRESS" | "COMPLETED" | "FAILED";
-              requestHash: string;
-              statusCode: number | null;
-              response: any;
-              orderId: string | null;
-            }>>`
-              SELECT "id", "status", "requestHash", "statusCode", "response", "orderId"
-              FROM "idempotency_records"
-              WHERE "userId" = ${userId} AND "key" = ${sanitizedIdempotencyKey}
-              FOR UPDATE
-            `;
+            // Read the record
+            const lockedRecord = await tx.idempotencyRecord.findUnique({
+              where: {
+                userId_key: {
+                  userId,
+                  key: sanitizedIdempotencyKey,
+                },
+              },
+            });
 
-            if (lockedRecords.length > 0 && lockedRecords[0].status === "COMPLETED") {
-              if (lockedRecords[0].requestHash === candidateHash) {
+            if (lockedRecord && lockedRecord.status === "COMPLETED") {
+              if (lockedRecord.requestHash === candidateHash) {
                 return {
-                  statusCode: lockedRecords[0].statusCode || 201,
+                  statusCode: lockedRecord.statusCode || 201,
                   body: {
-                    ...(lockedRecords[0].response as any),
+                    ...(lockedRecord.response as any),
                     isIdempotentReplay: true,
                   },
                 };
@@ -305,7 +300,7 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
           }
 
           // 2. Acquire row-level lock on customer's cart row using $queryRaw (Requirement 6)
-          await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM "carts" WHERE id = ${cart.id} FOR UPDATE`;
+          await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM carts WHERE id = ${cart.id} FOR UPDATE`;
 
           // 3. Re-read cart inside transaction with active lock to ensure items were not already processed
           const lockedCart = await tx.cart.findUnique({
@@ -351,11 +346,10 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
           const finalCanonicalHash = hashCanonicalPayload(finalCanonicalPayload);
 
           if (sanitizedIdempotencyKey && finalCanonicalHash !== candidateHash) {
-            await tx.$executeRaw`
-              UPDATE "idempotency_records"
-              SET "requestHash" = ${finalCanonicalHash}
-              WHERE "userId" = ${userId} AND "key" = ${sanitizedIdempotencyKey}
-            `;
+            await tx.idempotencyRecord.update({
+              where: { userId_key: { userId, key: sanitizedIdempotencyKey } },
+              data: { requestHash: finalCanonicalHash },
+            });
           }
 
           // 4. Verify store exists and is active
@@ -542,11 +536,10 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
           }));
 
           if (sanitizedIdempotencyKey) {
-            await tx.$executeRaw`
-              UPDATE "orders"
-              SET "responseSnapshot" = ${JSON.stringify(sanitizedResponseBody)}::jsonb
-              WHERE "id" = ${createdOrder.id}
-            `;
+            await tx.order.update({
+              where: { id: createdOrder.id },
+              data: { responseSnapshot: sanitizedResponseBody },
+            });
           }
 
           // 8. Test hook for isolated crash recovery simulation
@@ -557,15 +550,15 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
 
           // 9. Update IdempotencyRecord to COMPLETED with response and orderId
           if (sanitizedIdempotencyKey) {
-            await tx.$executeRaw`
-              UPDATE "idempotency_records"
-              SET "status" = 'COMPLETED'::"IdempotencyStatus",
-                  "statusCode" = 201,
-                  "response" = ${JSON.stringify(sanitizedResponseBody)}::jsonb,
-                  "orderId" = ${createdOrder.id},
-                  "updatedAt" = NOW()
-              WHERE "userId" = ${userId} AND "key" = ${sanitizedIdempotencyKey}
-            `;
+            await tx.idempotencyRecord.update({
+              where: { userId_key: { userId, key: sanitizedIdempotencyKey } },
+              data: {
+                status: "COMPLETED",
+                statusCode: 201,
+                response: sanitizedResponseBody,
+                orderId: createdOrder.id,
+              },
+            });
           }
 
           // 10. Clear customer's cart

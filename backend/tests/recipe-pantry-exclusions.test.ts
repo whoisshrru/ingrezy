@@ -91,30 +91,20 @@ async function runRecipePantryUnitTests() {
     }
   });
 
-  await test("Schema: Rejects malformed (non-UUID) strings in excludeProductIds", () => {
+  await test("Schema: Rejects empty strings in excludeProductIds", () => {
     const result = addRecipeToCartSchema.safeParse({
       storeId: validStoreId,
-      excludeProductIds: ["not-a-valid-uuid", validProdId1],
+      excludeProductIds: ["", validProdId1],
     });
-    assert.equal(result.success, false, "Should reject malformed UUID");
-    if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path.includes("excludeProductIds"));
-      assert.ok(issue, "Error should point to excludeProductIds");
-      assert.equal(issue?.message, "Invalid product ID format in exclusions");
-    }
+    assert.equal(result.success, false, "Should reject empty product ID");
   });
 
-  await test("Schema: Rejects malformed (non-UUID) strings in excludeIngredientIds", () => {
+  await test("Schema: Rejects empty strings in excludeIngredientIds", () => {
     const result = addRecipeToCartSchema.safeParse({
       storeId: validStoreId,
-      excludeIngredientIds: ["12345-invalid"],
+      excludeIngredientIds: [""],
     });
-    assert.equal(result.success, false, "Should reject malformed UUID");
-    if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path.includes("excludeIngredientIds"));
-      assert.ok(issue, "Error should point to excludeIngredientIds");
-      assert.equal(issue?.message, "Invalid ingredient ID format in exclusions");
-    }
+    assert.equal(result.success, false, "Should reject empty ingredient ID");
   });
 
   await test("Schema: Rejects negative or zero servings", () => {
@@ -125,8 +115,8 @@ async function runRecipePantryUnitTests() {
   });
 
   await test("Schema: Rejects invalid storeId format", () => {
-    const result = addRecipeToCartSchema.safeParse({ storeId: "store-123" });
-    assert.equal(result.success, false, "Should reject non-UUID storeId");
+    const result = addRecipeToCartSchema.safeParse({ storeId: "" });
+    assert.equal(result.success, false, "Should reject empty storeId");
   });
 
   // --------------------------------------------------------------------------

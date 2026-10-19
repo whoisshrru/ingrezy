@@ -84,6 +84,7 @@ class ProductService {
   static Future<ApiResponse<List<ProductModel>>> getStoreInventory(String storeId) async {
     final response = await ApiClient.get(
       '${ApiConfig.stores}/$storeId/inventory',
+      queryParams: {'limit': '100'},
       requireAuth: false,
     );
 
