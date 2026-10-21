@@ -3,7 +3,11 @@ generator client {
 }
 
 datasource db {
+<<<<<<< HEAD
   provider = "mysql"
+=======
+  provider = "mongodb"
+>>>>>>> feature/latest-updates-2026-10-22
   url      = env("DATABASE_URL")
 }
 
@@ -54,7 +58,7 @@ enum IdempotencyStatus {
 }
 
 model User {
-  id          String   @id @default(uuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   email       String?  @unique
   phoneNumber String   @unique
@@ -73,13 +77,12 @@ model User {
   idempotencyRecords IdempotencyRecord[]
 
   @@index([role])
-  @@index([phoneNumber])
   @@map("users")
 }
 
 model Address {
-  id           String   @id @default(uuid())
-  userId       String
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
   label        String   @default("Home")
   addressLine1 String
   addressLine2 String?
@@ -101,9 +104,9 @@ model Address {
 }
 
 model Store {
-  id              String   @id @default(uuid())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   name            String
-  managerId       String?  @unique
+  managerId       String?  @unique @db.ObjectId
   address         String
   city            String
   state           String
@@ -126,13 +129,13 @@ model Store {
 }
 
 model Product {
-  id          String      @id @default(uuid())
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   slug        String      @unique
   description String?
   category    String
   unit        String
-  basePrice   Decimal     @db.Decimal(10, 2)
+  basePrice   Float
   imageUrl    String?
   dietaryType DietaryType @default(VEG)
   isActive    Boolean     @default(true)
@@ -151,11 +154,11 @@ model Product {
 }
 
 model Inventory {
-  id            String   @id @default(uuid())
-  storeId       String
-  productId     String
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeId       String   @db.ObjectId
+  productId     String   @db.ObjectId
   stockQuantity Int      @default(0)
-  price         Decimal  @db.Decimal(10, 2)
+  price         Float
   isAvailable   Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -170,7 +173,7 @@ model Inventory {
 }
 
 model Recipe {
-  id              String      @id @default(uuid())
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
   externalId      String?     @unique
   source          String      @default("SYSTEM")
   title           String
@@ -182,9 +185,9 @@ model Recipe {
   difficulty      String      @default("EASY")
   dietaryType     DietaryType @default(VEG)
   cuisine         String      @default("Indian")
-  instructions    String      @db.Text
+  instructions    String
   imageUrl        String?
-  authorId        String?
+  authorId        String?     @db.ObjectId
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -196,14 +199,13 @@ model Recipe {
   @@index([cuisine])
   @@index([authorId])
   @@index([isActive])
-  @@index([externalId])
   @@map("recipes")
 }
 
 model RecipeIngredient {
-  id             String   @id @default(uuid())
-  recipeId       String
-  productId      String?
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  recipeId       String   @db.ObjectId
+  productId      String?  @db.ObjectId
   ingredientName String?
   rawMeasure     String?
   quantity       Float    @default(0)
@@ -222,9 +224,9 @@ model RecipeIngredient {
 }
 
 model Cart {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  storeId   String?
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  storeId   String?  @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -232,15 +234,14 @@ model Cart {
   store Store?     @relation(fields: [storeId], references: [id], onDelete: SetNull)
   items CartItem[]
 
-  @@index([userId])
   @@index([storeId])
   @@map("carts")
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String
-  productId String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  productId String   @db.ObjectId
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -255,13 +256,13 @@ model CartItem {
 }
 
 model Order {
-  id                     String              @id @default(uuid())
+  id                     String              @id @default(auto()) @map("_id") @db.ObjectId
   orderNumber            String              @unique
-  userId                 String
-  storeId                String
-  addressId              String
-  totalAmount            Decimal             @db.Decimal(10, 2)
-  deliveryFee            Decimal             @default(0.00) @db.Decimal(10, 2)
+  userId                 String              @db.ObjectId
+  storeId                String              @db.ObjectId
+  addressId              String              @db.ObjectId
+  totalAmount            Float
+  deliveryFee            Float               @default(0.00)
   orderStatus            OrderStatus         @default(PLACED)
   paymentStatus          PaymentStatus       @default(PENDING)
   paymentMethod          String              @default("COD")
@@ -290,13 +291,13 @@ model Order {
 }
 
 model OrderItem {
-  id          String   @id @default(uuid())
-  orderId     String
-  productId   String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId     String   @db.ObjectId
+  productId   String   @db.ObjectId
   productName String
-  unitPrice   Decimal  @db.Decimal(10, 2)
+  unitPrice   Float
   quantity    Int
-  subtotal    Decimal  @db.Decimal(10, 2)
+  subtotal    Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -309,9 +310,9 @@ model OrderItem {
 }
 
 model Delivery {
-  id                String         @id @default(uuid())
-  orderId           String         @unique
-  deliveryPartnerId String?
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  orderId           String         @unique @db.ObjectId
+  deliveryPartnerId String?        @db.ObjectId
   status            DeliveryStatus @default(ASSIGNED)
   pickupTime        DateTime?
   deliveredTime     DateTime?
@@ -332,14 +333,14 @@ model Delivery {
 }
 
 model IdempotencyRecord {
-  id          String            @id @default(uuid())
-  userId      String
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String            @db.ObjectId
   key         String
   requestHash String
   status      IdempotencyStatus @default(IN_PROGRESS)
   statusCode  Int?
   response    Json?
-  orderId     String?
+  orderId     String?           @db.ObjectId
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 

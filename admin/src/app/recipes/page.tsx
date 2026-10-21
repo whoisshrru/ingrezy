@@ -1374,11 +1374,11 @@ export default function RecipesPage() {
                     <button
                       type="button"
                       onClick={addIngredientRow}
-                      style={{ color: "#B34E22", backgroundColor: "#FFF7ED", borderColor: "#FDBA74" }}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-[#FFF7ED] hover:bg-[#B34E22] hover:text-white text-[#B34E22] text-xs font-bold rounded-xl border border-[#FDBA74] transition-all cursor-pointer"
+                      style={{ color: "#ffffff", backgroundColor: "#B34E22", borderColor: "#8F3E1A" }}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#B34E22] hover:bg-[#8F3E1A] text-white text-xs font-bold rounded-xl shadow-xs border border-[#8F3E1A] transition-all cursor-pointer active:scale-95"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Ingredient Row</span>
+                      <Plus className="w-3.5 h-3.5 text-white" />
+                      <span style={{ color: "#ffffff" }} className="text-white font-bold">Add Ingredient Row</span>
                     </button>
                   </div>
 

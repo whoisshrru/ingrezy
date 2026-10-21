@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ingrezy_mobile/models/user_model.dart';
 import 'package:ingrezy_mobile/models/product_model.dart';
@@ -5,6 +6,12 @@ import 'package:ingrezy_mobile/models/order_model.dart';
 import 'package:ingrezy_mobile/models/cart_model.dart';
 import 'package:ingrezy_mobile/models/recipe_model.dart';
 import 'package:ingrezy_mobile/providers/recipe_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ingrezy_mobile/l10n/generated/app_localizations.dart';
+import 'package:ingrezy_mobile/providers/auth_provider.dart';
+import 'package:ingrezy_mobile/providers/locale_provider.dart';
+import 'package:ingrezy_mobile/screens/splash/splash_screen.dart';
 
 void main() {
   group('Ingrezy Model & Cart Unit Tests', () {
@@ -411,5 +418,137 @@ void main() {
       expect(item.quantity, 1);
       expect(item.effectiveSubtotal, 20.0);
     });
+
+    testWidgets('Credentials row renders without overflow at 80px width', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 80.0,
+                child: Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          'Credentials',
+                          style: TextStyle(fontSize: 11),
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Credentials row renders without overflow at 380px width', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 380.0,
+                child: Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          'Credentials',
+                          style: TextStyle(fontSize: 11),
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('SplashScreen renders app branding, tagline, and progress indicator', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final authProv = AuthProvider();
+      // Initialize auth so isLoading completes
+      await authProv.init();
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => LocaleProvider()),
+            ChangeNotifierProvider<AuthProvider>.value(value: authProv),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SplashScreen(),
+          ),
+        ),
+      );
+
+      // Verify essential branding elements
+      expect(find.text('Ingrezy'), findsOneWidget);
+      expect(find.text('Fresh groceries, smarter cooking'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.eco_rounded), findsOneWidget);
+      expect(find.text('Packing fresh groceries...'), findsOneWidget);
+
+      // Advance through grocery falling and trolley rollout
+      await tester.pump(const Duration(milliseconds: 1500));
+      // Mid-flight: groceries are falling into trolley
+      expect(find.byType(CustomPaint), findsWidgets);
+
+      // Complete master animation (3.5s)
+      await tester.pump(const Duration(milliseconds: 2100));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('SplashScreen triggers onFinished callback after animation completes', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final authProv = AuthProvider();
+      await authProv.init();
+
+      bool finishedCalled = false;
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => LocaleProvider()),
+            ChangeNotifierProvider<AuthProvider>.value(value: authProv),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SplashScreen(
+              onFinished: () {
+                finishedCalled = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(finishedCalled, isFalse);
+
+      // Advance timer past the 3.5s animation duration
+      await tester.pump(const Duration(milliseconds: 3600));
+      expect(finishedCalled, isTrue);
+    });
   });
 }
+
+
