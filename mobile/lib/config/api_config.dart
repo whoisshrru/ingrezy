@@ -50,7 +50,7 @@ class ApiConfig {
   static String get health => '$baseUrl/api/health';
   static String get authRegister => '$baseUrl/api/auth/register';
   static String get authLogin => '$baseUrl/api/auth/login';
-  static String get authProfile => '$baseUrl/api/auth/profile';
+  static String get authProfile => '$baseUrl/api/auth/me';
 
   static String get products => '$baseUrl/api/products';
   static String get recipes => '$baseUrl/api/recipes';

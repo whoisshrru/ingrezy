@@ -17,7 +17,7 @@ import 'screens/customer/cart_screen.dart';
 import 'screens/customer/customer_main_nav.dart';
 import 'screens/delivery/delivery_dashboard.dart';
 import 'screens/retailer/retailer_dashboard.dart';
-import 'widgets/common_widgets.dart';
+import 'screens/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,10 +54,11 @@ class IngrezyApp extends StatelessWidget {
       locale: localeProv.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      home: const RootRoleRouter(),
+      home: const SplashScreen(),
       routes: {
         '/cart': (context) => const CartScreen(),
         '/home': (context) => const CustomerMainNav(),
+        '/splash': (context) => const SplashScreen(),
       },
     );
   }
@@ -72,7 +73,10 @@ class RootRoleRouter extends StatelessWidget {
 
     if (authProv.isLoading) {
       return const Scaffold(
-        body: LoadingView(message: 'Initializing Ingrezy...'),
+        backgroundColor: AppTheme.warmWhite,
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.spiceOrange),
+        ),
       );
     }
 
@@ -80,7 +84,7 @@ class RootRoleRouter extends StatelessWidget {
       return const LoginScreen();
     }
 
-    // Role-based main screen routing
+    // Role-based main screen routing for authenticated users
     switch (authProv.currentRole) {
       case UserRole.RETAILER:
         return const RetailerDashboard();
@@ -92,3 +96,4 @@ class RootRoleRouter extends StatelessWidget {
     }
   }
 }
+
