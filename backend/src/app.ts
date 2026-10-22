@@ -28,7 +28,7 @@ app.get("/", (_req, res) => {
 // Health check endpoint
 app.get("/api/health", async (_req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await prisma.$runCommandRaw({ ping: 1 });
 
     res.status(200).json({
       success: true,
