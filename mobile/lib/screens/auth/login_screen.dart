@@ -87,12 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
               style: const TextStyle(color: AppTheme.cocoaBrown),
               decoration: const InputDecoration(
                 labelText: 'Base URL',
-                hintText: 'e.g. http://10.0.2.2:5000 or http://192.168.1.5:5000',
+                hintText: 'https://ingrezy.onrender.com',
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              '• Android Emulator: http://10.0.2.2:5000\n• Physical Phone: http://<Your-PC-IP>:5000\n• Desktop / Web: http://localhost:5000',
+              '• Production: https://ingrezy.onrender.com\n• Local Dev: http://localhost:5000 or http://10.0.2.2:5000',
               style: TextStyle(fontSize: 11, color: AppTheme.cocoaBrownLight),
             ),
           ],

@@ -1,20 +1,18 @@
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiConfig {
   static const String _prefKeyBaseUrl = 'ingrezy_custom_base_url';
 
-  // Default host per platform
+  /// Production deployed backend URL on Render
+  static const String productionBaseUrl = 'https://ingrezy.onrender.com';
+
+  /// Default API base URL: defaults to the deployed production Render URL across all platforms
+  /// (Web, Android emulator & physical device, iOS, macOS, Windows, Linux).
+  /// Can be overridden for local development using:
+  /// flutter run --dart-define=API_BASE_URL=http://localhost:5000
   static String get defaultBaseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:5000';
-    }
-    // Android: uses http://localhost:5000 via 'adb reverse tcp:5000 tcp:5000' over USB
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://localhost:5000';
-    }
-    // Windows / macOS / Linux / iOS simulator
-    return 'http://localhost:5000';
+    const envBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: productionBaseUrl);
+    return envBaseUrl;
   }
 
   static String _currentBaseUrl = defaultBaseUrl;
@@ -25,7 +23,16 @@ class ApiConfig {
     final prefs = await SharedPreferences.getInstance();
     final savedUrl = prefs.getString(_prefKeyBaseUrl);
     if (savedUrl != null && savedUrl.trim().isNotEmpty) {
-      _currentBaseUrl = savedUrl.trim();
+      final trimmed = savedUrl.trim();
+      // Auto-migrate stale local development URLs to the deployed production URL
+      if (trimmed == 'http://localhost:5000' ||
+          trimmed == 'http://10.0.2.2:5000' ||
+          trimmed == 'http://127.0.0.1:5000') {
+        _currentBaseUrl = defaultBaseUrl;
+        await prefs.remove(_prefKeyBaseUrl);
+      } else {
+        _currentBaseUrl = trimmed;
+      }
     } else {
       _currentBaseUrl = defaultBaseUrl;
     }
