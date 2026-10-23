@@ -214,7 +214,7 @@ export default function AdminLayout({
             <span className="text-xs text-[#7A7056] font-medium">•</span>
             <span className="text-xs font-semibold text-[#6A6332] flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 rounded-full border border-[#E8E2D5]">
               <span className="w-2 h-2 rounded-full bg-[#6A6332] animate-pulse" />
-              Backend Connected (Port 5000)
+              Backend Live (Render)
             </span>
           </div>
 
