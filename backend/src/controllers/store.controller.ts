@@ -346,12 +346,12 @@ export async function setInventoryItem(req: AuthenticatedRequest, res: Response)
         storeId,
         productId,
         stockQuantity,
-        price: new Prisma.Decimal(price),
+        price,
         isAvailable: isAvailable ?? true,
       },
       update: {
         stockQuantity,
-        price: new Prisma.Decimal(price),
+        price,
         isAvailable: isAvailable ?? true,
       },
       include: {
@@ -425,7 +425,7 @@ export async function updateInventoryItem(req: AuthenticatedRequest, res: Respon
     const input = parseResult.data;
 
     if (input.stockQuantity !== undefined) data.stockQuantity = input.stockQuantity;
-    if (input.price !== undefined) data.price = new Prisma.Decimal(input.price);
+    if (input.price !== undefined) data.price = input.price;
     if (input.isAvailable !== undefined) data.isAvailable = input.isAvailable;
 
     const updated = await prisma.inventory.update({
@@ -520,12 +520,12 @@ export async function batchUpdateInventory(req: AuthenticatedRequest, res: Respo
             storeId,
             productId: item.productId,
             stockQuantity: item.stockQuantity,
-            price: new Prisma.Decimal(item.price),
+            price: item.price,
             isAvailable: item.isAvailable ?? true,
           },
           update: {
             stockQuantity: item.stockQuantity,
-            price: new Prisma.Decimal(item.price),
+            price: item.price,
             isAvailable: item.isAvailable ?? true,
           },
         })

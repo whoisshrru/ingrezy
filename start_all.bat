@@ -14,8 +14,8 @@ start "Ingrezy Admin" cmd /k "cd /d D:\ingrezy\admin && npm run dev"
 
 timeout /t 3 /nobreak >nul
 
-echo [3/3] Starting Flutter Mobile App (Windows Desktop)...
-start "Ingrezy Mobile" cmd /k "cd /d D:\ingrezy\mobile && flutter run -d windows"
+echo [3/3] Starting Flutter Mobile App (Chrome Web Browser)...
+start "Ingrezy Mobile" cmd /k "cd /d D:\ingrezy\mobile && flutter run -d chrome"
 
 echo.
 echo ===================================================

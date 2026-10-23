@@ -191,7 +191,7 @@ export async function createProduct(req: Request, res: Response): Promise<void> 
         description: description || null,
         category,
         unit,
-        basePrice: new Prisma.Decimal(basePrice),
+        basePrice,
         imageUrl: imageUrl || null,
         dietaryType,
         isActive,
@@ -290,7 +290,7 @@ export async function updateProduct(req: Request, res: Response): Promise<void> 
     if (input.description !== undefined) data.description = input.description;
     if (input.category !== undefined) data.category = input.category;
     if (input.unit !== undefined) data.unit = input.unit;
-    if (input.basePrice !== undefined) data.basePrice = new Prisma.Decimal(input.basePrice);
+    if (input.basePrice !== undefined) data.basePrice = input.basePrice;
     if (input.imageUrl !== undefined) data.imageUrl = input.imageUrl || null;
     if (input.dietaryType !== undefined) data.dietaryType = input.dietaryType;
     if (input.isActive !== undefined) data.isActive = input.isActive;
@@ -304,7 +304,7 @@ export async function updateProduct(req: Request, res: Response): Promise<void> 
     if (input.basePrice !== undefined) {
       await prisma.inventory.updateMany({
         where: { productId: id },
-        data: { price: new Prisma.Decimal(input.basePrice) },
+        data: { price: input.basePrice },
       });
     }
     if (input.isActive !== undefined) {

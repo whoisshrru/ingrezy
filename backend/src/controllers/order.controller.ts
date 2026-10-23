@@ -256,8 +256,8 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
 
     // Define the atomic transaction execution wrapped for concurrency coordination
     const checkoutExecution = (async (): Promise<CheckoutResponsePayload> => {
-      const result = await prisma.$transaction(
-        async (tx) => {
+      const result = await prisma.$transaction<CheckoutResponsePayload>(
+        async (tx): Promise<CheckoutResponsePayload> => {
           // 1. If idempotency key provided, coordinate via IdempotencyRecord
           if (sanitizedIdempotencyKey) {
             try {
@@ -299,8 +299,11 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
             }
           }
 
-          // 2. Acquire row-level lock on customer's cart row using $queryRaw (Requirement 6)
-          await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM carts WHERE id = ${cart.id} FOR UPDATE`;
+          // 2. Acquire lock on customer's cart row for concurrency coordination
+          await tx.cart.update({
+            where: { id: cart.id },
+            data: { updatedAt: new Date() },
+          });
 
           // 3. Re-read cart inside transaction with active lock to ensure items were not already processed
           const lockedCart = await tx.cart.findUnique({
@@ -362,9 +365,9 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
           const orderItemsData: Array<{
             productId: string;
             productName: string;
-            unitPrice: Prisma.Decimal;
+            unitPrice: number;
             quantity: number;
-            subtotal: Prisma.Decimal;
+            subtotal: number;
           }> = [];
 
           // 5. Validate every cart item against current store inventory and decrement stock conditionally
@@ -430,7 +433,7 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
               productName: item.product.name,
               unitPrice: itemPrice,
               quantity: item.quantity,
-              subtotal: new Prisma.Decimal(itemSubtotal),
+              subtotal: itemSubtotal,
             });
           }
 
@@ -478,23 +481,25 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
           };
 
           // 7. Create Order with persistent idempotency and snapshot data
-          const createdOrder = await (tx.order as any).create({
+          const createdOrder = await tx.order.create({
             data: {
               orderNumber,
               userId,
               storeId: lockedStoreId,
               addressId,
-              totalAmount: new Prisma.Decimal(totalAmount),
-              deliveryFee: new Prisma.Decimal(deliveryFee),
+              totalAmount,
+              deliveryFee,
               orderStatus: OrderStatus.PLACED,
               paymentStatus: PaymentStatus.PENDING,
               paymentMethod: paymentMethod || "COD",
               specialInstructions: specialInstructions || null,
               idempotencyKey: sanitizedIdempotencyKey,
               idempotencyHash: sanitizedIdempotencyKey ? finalCanonicalHash : null,
-              requestPayloadSnapshot: sanitizedIdempotencyKey ? finalCanonicalPayload : null,
+              requestPayloadSnapshot: (sanitizedIdempotencyKey
+                ? (finalCanonicalPayload as unknown as Prisma.InputJsonValue)
+                : null),
               responseStatus: 201,
-              responseSnapshot: sanitizedResponseBody,
+              responseSnapshot: sanitizedResponseBody as unknown as Prisma.InputJsonValue,
               items: {
                 create: orderItemsData,
               },
@@ -574,7 +579,6 @@ export async function checkout(req: AuthenticatedRequest, res: Response): Promis
           };
         },
         {
-          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
           maxWait: 5000,
           timeout: 10000,
         }

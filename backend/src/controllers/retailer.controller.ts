@@ -82,16 +82,29 @@ async function getManagedStore(userId: string) {
   // Populate catalog inventory
   const products = await prisma.product.findMany({ select: { id: true, basePrice: true } });
   if (products.length > 0) {
-    await prisma.inventory.createMany({
-      data: products.map((p) => ({
+    const existing = await prisma.inventory.findMany({
+      where: {
+        storeId: newStore.id,
+        productId: { in: products.map((p) => p.id) },
+      },
+      select: { productId: true },
+    });
+    const existingProductIds = new Set(existing.map((e) => e.productId));
+    const toInsert = products
+      .filter((p) => !existingProductIds.has(p.id))
+      .map((p) => ({
         storeId: newStore.id,
         productId: p.id,
         stockQuantity: 100,
         price: p.basePrice,
         isAvailable: true,
-      })),
-      skipDuplicates: true,
-    }).catch(() => {});
+      }));
+
+    if (toInsert.length > 0) {
+      await prisma.inventory.createMany({
+        data: toInsert,
+      }).catch(() => {});
+    }
   }
 
   return newStore;
