@@ -25,13 +25,14 @@ export async function register(req: Request, res: Response): Promise<void> {
     }
 
     const { name, phoneNumber, email, password, role } = parseResult.data;
+    const normalizedEmail = email && email.trim().length > 0 ? email.trim().toLowerCase() : undefined;
 
     // Check for existing user by phone or email
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
           { phoneNumber },
-          ...(email ? [{ email }] : []),
+          ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
         ],
       },
     });
@@ -52,7 +53,7 @@ export async function register(req: Request, res: Response): Promise<void> {
       data: {
         name,
         phoneNumber,
-        email: email || null,
+        email: normalizedEmail || null,
         password: hashedPassword,
         role: role || Role.CUSTOMER,
         cart: role === Role.CUSTOMER ? { create: {} } : undefined,
@@ -84,6 +85,21 @@ export async function register(req: Request, res: Response): Promise<void> {
       },
     });
   } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      const meta = (error as { meta?: { target?: string | string[] } }).meta;
+      const target = typeof meta?.target === "string" ? meta.target : (Array.isArray(meta?.target) ? meta.target.join(" ") : "");
+      const isPhone = target.includes("phoneNumber");
+      res.status(409).json({
+        success: false,
+        message: `${isPhone ? "Phone number" : "Email"} is already registered. Please login instead.`,
+      });
+      return;
+    }
     console.error("Registration error:", error instanceof Error ? error.message : "Unknown error");
     res.status(500).json({
       success: false,
